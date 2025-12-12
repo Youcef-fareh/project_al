@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Ouedkniss Marketplace</title>
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body>
+<div class="auth-container">
+    <div class="auth-card">
+        <!-- Header with Logo -->
+        <div class="auth-header">
+            <h1 class="marketplace-title">Ouedkniss</h1>
+            <p class="marketplace-subtitle">Marketplace Algérien</p>
+        </div>
+
+        <!-- Error Alert -->
+        <div th:if="${loginError}" class="alert alert-danger" role="alert">
+            <strong>Login Failed</strong>
+            <p th:text="${loginError}">Invalid credentials</p>
+        </div>
+
+        <!-- Login Form -->
+        <form th:action="@{/login}" method="POST" th:object="${loginForm}" class="auth-form" novalidate>
+
+            <!-- Email Field -->
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input
+                        type="email"
+                        id="email"
+                        th:field="*{email}"
+                        class="form-control"
+                        placeholder="you@example.com"
+                        required>
+                <small th:if="${#fields.hasErrors('email')}"
+                       th:errors="*{email}"
+                       class="form-error">
+                </small>
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input
+                        type="password"
+                        id="password"
+                        th:field="*{password}"
+                        class="form-control"
+                        placeholder="••••••••"
+                        required>
+                <small th:if="${#fields.hasErrors('password')}"
+                       th:errors="*{password}"
+                       class="form-error">
+                </small>
+            </div>
+
+            <!-- Remember Me & Forgot Password -->
+            <div class="form-footer">
+                <div class="remember-me">
+                    <input type="checkbox" id="rememberMe" name="rememberMe" value="true">
+                    <label for="rememberMe" class="checkbox-label">Remember me</label>
+                </div>
+                <a href="#" class="forgot-password">Forgot password?</a>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+        </form>
+
+        <!-- Divider -->
+        <div class="divider">or</div>
+
+        <!-- Signup Link -->
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="#" th:href="@{/signup}" class="auth-link">Create one</a></p>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/auth.js}"></script>
+</body>
+</html>

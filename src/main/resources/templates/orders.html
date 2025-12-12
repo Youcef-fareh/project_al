@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - Seller Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/orders.css}">
+</head>
+<body>
+<div class="seller-dashboard">
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="seller-title">Seller Dashboard</h2>
+        </div>
+
+        <nav class="sidebar-menu">
+            <a th:href="@{/create-post}" class="menu-item">
+                <span class="icon">📝</span>
+                <span>Create Post</span>
+            </a>
+            <a th:href="@{/my-posts}" class="menu-item">
+                <span class="icon">📋</span>
+                <span>My Posts</span>
+            </a>
+            <a th:href="@{/orders}" class="menu-item active">
+                <span class="icon">📦</span>
+                <span>Orders</span>
+            </a>
+            <a th:href="@{/my-stores}" class="menu-item">
+                <span class="icon">🏪</span>
+                <span>My Stores</span>
+            </a>
+            <a th:href="@{/profile}" class="menu-item">
+                <span class="icon">👤</span>
+                <span>Profile</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title">
+                    <h1>Orders Management</h1>
+                    <p>View and manage customer orders and shipments</p>
+                </div>
+                <button class="btn btn-primary" id="exportOrdersBtn">
+                    <span>📤</span>
+                    <span>Export Orders</span>
+                </button>
+            </div>
+
+            <!-- Alerts -->
+            <div class="alert alert-success" id="successAlert">
+                <span>✅</span>
+                <span id="alertMessage">Order status updated successfully!</span>
+            </div>
+
+            <div class="alert alert-error" id="errorAlert">
+                <span>❌</span>
+                <span id="errorMessage">An error occurred. Please try again.</span>
+            </div>
+
+            <!-- Stats Summary -->
+            <div class="stats-summary">
+                <div class="stat-card">
+                    <div class="stat-icon total">
+                        📦
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="totalOrders">24</div>
+                        <div class="stat-label">Total Orders</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon pending">
+                        ⏳
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="pendingOrders">8</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon completed">
+                        ✅
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="completedOrders">14</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon revenue">
+                        💰
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="totalRevenue">89,500 DA</div>
+                        <div class="stat-label">Total Revenue</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters & Actions -->
+            <div class="filters-actions">
+                <div class="search-filter">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchOrders" placeholder="Search by order ID or customer...">
+                    </div>
+                    <select class="filter-select" id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                    <div class="date-filter">
+                        <input type="date" id="startDate" class="date-input" placeholder="From">
+                        <input type="date" id="endDate" class="date-input" placeholder="To">
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="refreshBtn">
+                        <span>🔄</span>
+                        <span>Refresh</span>
+                    </button>
+                    <button class="btn btn-secondary" id="printBtn">
+                        <span>🖨️</span>
+                        <span>Print</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="orders-table-container">
+                <div class="table-responsive">
+                    <table class="orders-table">
+                        <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                        <!-- Order rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                    <div class="pagination-info">Showing 1-8 of 24 orders</div>
+                    <button class="pagination-btn" disabled>« Previous</button>
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn">Next »</button>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="icon">📦</div>
+                <h3>No Orders Yet</h3>
+                <p>You haven't received any orders yet. Promote your products to get more customers.</p>
+                <a th:href="@{/create-post}" class="btn btn-primary">Create Promotional Post</a>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Order Details Modal -->
+<div class="modal" id="orderDetailsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>
+                <span>📦</span>
+                <span>Order Details: <span id="modalOrderId">ORD-001</span></span>
+            </h3>
+            <button class="modal-close" id="closeOrderModal">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="order-details-grid">
+                <!-- Left Column -->
+                <div>
+                    <!-- Order Information -->
+                    <div class="order-section">
+                        <h4>Order Information</h4>
+                        <div class="order-info-item">
+                            <span class="order-info-label">Order ID:</span>
+                            <span class="order-info-value" id="detailOrderId">ORD-001</span>
+                        </div>
+                        <div class="order-info-item">
+                            <span class="order-info-label">Order Date:</span>
+                            <span class="order-info-value" id="detailOrderDate">Mar 15, 2024</span>
+                        </div>
+                        <div class="order-info-item">
+                            <span class="order-info-label">Payment Method:</span>
+                            <span class="order-info-value" id="detailPaymentMethod">Cash on Delivery</span>
+                        </div>
+                        <div class="order-info-item">
+                            <span class="order-info-label">Payment Status:</span>
+                            <span class="order-info-value" id="detailPaymentStatus">Paid</span>
+                        </div>
+                        <div class="order-info-item">
+                            <span class="order-info-label">Delivery Method:</span>
+                            <span class="order-info-value" id="detailDeliveryMethod">Standard Delivery</span>
+                        </div>
+                    </div>
+
+                    <!-- Customer Information -->
+                    <div class="order-section">
+                        <h4>Customer Information</h4>
+                        <div class="customer-card">
+                            <div class="customer-header">
+                                <div class="customer-avatar-large" id="detailCustomerAvatar">
+                                    👤
+                                </div>
+                                <div>
+                                    <div class="customer-name" id="detailCustomerName">Karim Ahmed</div>
+                                    <div class="customer-contact" id="detailCustomerContact">karim.ahmed@example.com</div>
+                                    <div class="customer-contact" id="detailCustomerPhone">+213 555 789 123</div>
+                                </div>
+                            </div>
+                            <div class="customer-address" id="detailCustomerAddress">
+                                123 Street Name, Algiers, Algeria
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <!-- Order Items -->
+                    <div class="order-section">
+                        <h4>Order Items</h4>
+                        <div class="order-items" id="orderItemsList">
+                            <!-- Items will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div class="order-section">
+                        <h4>Order Summary</h4>
+                        <div class="order-summary">
+                            <div class="summary-row">
+                                <span class="summary-label">Subtotal:</span>
+                                <span class="summary-value" id="summarySubtotal">125,000 DA</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">Shipping:</span>
+                                <span class="summary-value" id="summaryShipping">500 DA</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">Tax:</span>
+                                <span class="summary-value" id="summaryTax">0 DA</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span class="summary-label">Total:</span>
+                                <span class="summary-value" id="summaryTotal">125,500 DA</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Update -->
+                    <div class="order-section">
+                        <h4>Update Status</h4>
+                        <div class="status-update">
+                            <select class="status-select" id="updateStatusSelect">
+                                <option value="pending">Pending</option>
+                                <option value="processing">Processing</option>
+                                <option value="shipped">Shipped</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="printInvoiceBtn">
+                <span>🖨️</span>
+                <span>Print Invoice</span>
+            </button>
+            <button class="btn btn-primary" id="updateStatusBtn">
+                <span>💾</span>
+                <span>Update Status</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/orders.js}"></script>
+</body>
+</html>

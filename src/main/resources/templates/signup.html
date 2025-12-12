@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Ouedkniss Marketplace</title>
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body>
+<div class="auth-container">
+    <div class="auth-card auth-card-large">
+        <!-- Header -->
+        <div class="auth-header">
+            <h1 class="marketplace-title">Join Ouedkniss</h1>
+            <p class="marketplace-subtitle">Create your account</p>
+        </div>
+
+        <!-- Global Message -->
+        <div th:if="${message}" class="alert alert-info">
+            <p th:text="${message}"></p>
+        </div>
+
+        <!-- Global Error -->
+        <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+            <strong>Please correct the errors below</strong>
+        </div>
+
+        <!-- Signup Form -->
+        <form th:action="@{/signup}" method="POST" th:object="${userForm}" class="auth-form" novalidate>
+
+            <!-- Full Name -->
+            <div class="form-group">
+                <label for="nom" class="form-label">Full Name</label>
+                <input
+                        type="text"
+                        id="nom"
+                        th:field="*{nom}"
+                        class="form-control"
+                        placeholder="Your full name"
+                        required>
+                <small th:if="${#fields.hasErrors('nom')}"
+                       th:errors="*{nom}"
+                       class="form-error">
+                </small>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input
+                        type="email"
+                        id="email"
+                        th:field="*{email}"
+                        class="form-control"
+                        placeholder="you@example.com"
+                        required>
+                <small th:if="${#fields.hasErrors('email')}"
+                       th:errors="*{email}"
+                       class="form-error">
+                </small>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="form-group">
+                <label for="phone_number" class="form-label">Phone Number</label>
+                <input
+                        type="tel"
+                        id="phone_number"
+                        th:field="*{phone_number}"
+                        class="form-control"
+                        placeholder="+213 55 123 45 67"
+                        required>
+                <small th:if="${#fields.hasErrors('phone_number')}"
+                       th:errors="*{phone_number}"
+                       class="form-error">
+                </small>
+            </div>
+
+            <!-- Address -->
+            <div class="form-group">
+                <label for="adresse" class="form-label">Address</label>
+                <input
+                        type="text"
+                        id="adresse"
+                        th:field="*{adresse}"
+                        class="form-control"
+                        placeholder="Your address"
+                        required>
+                <small th:if="${#fields.hasErrors('adresse')}"
+                       th:errors="*{adresse}"
+                       class="form-error">
+                </small>
+            </div>
+
+            <!-- Role Selector -->
+            <div class="form-group">
+                <label for="role" class="form-label">Account Type</label>
+                <select id="role" name="role" class="form-control" required>
+                    <option value="">Select your role</option>
+                    <option th:each="role : ${roles}"
+                            th:value="${role}"
+                            th:text="${role}">
+                    </option>
+                </select>
+                <small th:if="${#fields.hasErrors('role')}"
+                       th:errors="*{role}"
+                       class="form-error">
+                </small>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input
+                        type="password"
+                        id="password"
+                        th:field="*{password}"
+                        class="form-control password-input"
+                        placeholder="••••••••"
+                        data-password-field="true"
+                        required>
+                <div class="password-strength">
+                    <div class="strength-bar"></div>
+                    <small class="strength-text"></small>
+                </div>
+                <small th:if="${#fields.hasErrors('password')}"
+                       th:errors="*{password}"
+                       class="form-error">
+                </small>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="form-group">
+                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                <input
+                        type="password"
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        class="form-control"
+                        placeholder="••••••••"
+                        required>
+                <small id="confirmPasswordError" class="form-error"></small>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="terms" name="terms" required>
+                <label for="terms" class="checkbox-label">
+                    I agree to the <a href="#" class="link">Terms & Conditions</a>
+                </label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+        </form>
+
+        <!-- Divider -->
+        <div class="divider">or</div>
+
+        <!-- Login Link -->
+        <div class="auth-footer">
+            <p>Already have an account? <a href="#" th:href="@{/login}" class="auth-link">Sign in</a></p>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/auth.js}"></script>
+</body>
+</html>

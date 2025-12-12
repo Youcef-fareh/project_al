@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Ad - Ouedkniss Seller Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+    <link rel="stylesheet" th:href="@{/css/seller.css}">
+</head>
+<body>
+<div class="seller-dashboard">
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="seller-title">Seller Dashboard</h2>
+        </div>
+
+        <nav class="sidebar-menu">
+            <a href="#" class="menu-item active">
+                <span class="icon">📝</span>
+                <span>Create Ad</span>
+            </a>
+            <a href="#" th:href="@{/seller/ads}" class="menu-item">
+                <span class="icon">📋</span>
+                <span>My Ads</span>
+            </a>
+            <a href="#" th:href="@{/seller/orders}" class="menu-item">
+                <span class="icon">📦</span>
+                <span>Orders</span>
+            </a>
+            <a href="#" th:href="@{/seller/stores}" class="menu-item">
+                <span class="icon">🏪</span>
+                <span>My Stores</span>
+            </a>
+            <a href="#" th:href="@{/profile}" class="menu-item">
+                <span class="icon">👤</span>
+                <span>Profile</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container-fluid">
+            <div class="page-header">
+                <h1>Create New Ad</h1>
+                <p>Publish your product or service to reach thousands of buyers</p>
+            </div>
+
+            <!-- Success/Error Messages -->
+            <div th:if="${successMessage}" class="alert alert-success">
+                <p th:text="${successMessage}"></p>
+            </div>
+            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                <strong>Please correct the errors below</strong>
+            </div>
+
+            <!-- Create Ad Form -->
+            <form th:action="@{/seller/ads/new}" method="POST" th:object="${adForm}"
+                  class="ad-form" enctype="multipart/form-data" novalidate>
+
+                <!-- Post Information Section -->
+                <div class="form-section">
+                    <h2 class="section-title">📝 Post Information</h2>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="nom_post" class="form-label">Post Title *</label>
+                            <input type="text" id="nom_post" th:field="*{nom_post}"
+                                   class="form-control" placeholder="Enter post title" required>
+                            <small th:if="${#fields.hasErrors('nom_post')}"
+                                   th:errors="*{nom_post}" class="form-error"></small>
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label for="type" class="form-label">Post Type *</label>
+                            <select id="type" th:field="*{type}" class="form-control" required>
+                                <option value="">Select type</option>
+                                <option value="PRODUCT">Product</option>
+                                <option value="SERVICE">Service</option>
+                            </select>
+                            <small th:if="${#fields.hasErrors('type')}"
+                                   th:errors="*{type}" class="form-error"></small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" class="form-label">Description *</label>
+                        <textarea id="description" th:field="*{description}"
+                                  class="form-control form-control-lg" rows="4"
+                                  placeholder="Describe your product or service in detail..."
+                                  required></textarea>
+                        <small th:if="${#fields.hasErrors('description')}"
+                               th:errors="*{description}" class="form-error"></small>
+                    </div>
+
+                    <!-- Keywords -->
+                    <div class="form-group">
+                        <label for="keywords" class="form-label">Keywords (comma-separated)</label>
+                        <input type="text" id="keywords" th:field="*{keywords}"
+                               class="form-control"
+                               placeholder="e.g. laptop, electronics, new">
+                        <div class="keywords-chips" id="keywordsChips"></div>
+                        <small class="form-text">Press Enter or comma to add keywords</small>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="form-group">
+                        <label for="category" class="form-label">Category *</label>
+                        <select id="category" th:field="*{category}" class="form-control" required>
+                            <option value="">Select category</option>
+                            <option value="ELECTRONICS">Electronics</option>
+                            <option value="REAL_ESTATE">Real Estate</option>
+                            <option value="VEHICLES">Vehicles</option>
+                            <option value="FASHION">Fashion</option>
+                            <option value="FURNITURE">Furniture</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                        <small th:if="${#fields.hasErrors('category')}"
+                               th:errors="*{category}" class="form-error"></small>
+                    </div>
+                </div>
+
+                <!-- Product Details Section -->
+                <div class="form-section">
+                    <h2 class="section-title">📦 Product Details</h2>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="price" class="form-label">Price (DA) *</label>
+                            <input type="number" id="price" th:field="*{price}"
+                                   class="form-control" placeholder="0" min="0" step="100" required>
+                            <small th:if="${#fields.hasErrors('price')}"
+                                   th:errors="*{price}" class="form-error"></small>
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label for="quantity" class="form-label">Quantity *</label>
+                            <input type="number" id="quantity" th:field="*{quantity}"
+                                   class="form-control" placeholder="1" min="1" required>
+                            <small th:if="${#fields.hasErrors('quantity')}"
+                                   th:errors="*{quantity}" class="form-error"></small>
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label for="availability" class="form-label">Available</label>
+                            <select id="availability" th:field="*{disponble}" class="form-control">
+                                <option value="true">In Stock</option>
+                                <option value="false">Out of Stock</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="options" class="form-label">Product Options</label>
+                        <input type="text" id="options" th:field="*{options}"
+                               class="form-control"
+                               placeholder="e.g. Color: Black, Red; Size: S, M, L">
+                    </div>
+                </div>
+
+                <!-- Advertisement Details Section -->
+                <div class="form-section">
+                    <h2 class="section-title">📢 Advertisement Details</h2>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="duration" class="form-label">Duration (days) *</label>
+                            <input type="number" id="duration" th:field="*{duree}"
+                                   class="form-control" placeholder="30" min="1" max="365" required>
+                            <small class="form-text">How long should this ad be active?</small>
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <label for="cost" class="form-label">Advertisement Cost (DA) *</label>
+                            <input type="number" id="cost" th:field="*{cost}"
+                                   class="form-control" placeholder="0" min="0" step="100" required>
+                            <small class="form-text">Cost to promote this ad</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reduction" class="form-label">Discount (%)</label>
+                        <input type="number" id="reduction" th:field="*{redacution}"
+                               class="form-control" placeholder="0" min="0" max="100" step="0.1">
+                        <small class="form-text">Optional discount percentage</small>
+                    </div>
+                </div>
+
+                <!-- Store Selection -->
+                <div class="form-section">
+                    <h2 class="section-title">🏪 Store Information</h2>
+
+                    <div class="form-group">
+                        <label for="onlineStore" class="form-label">Select Store *</label>
+                        <select id="onlineStore" th:field="*{onlineStore}" class="form-control" required>
+                            <option value="">Choose a store</option>
+                            <option th:each="store : ${onlineStores}"
+                                    th:value="${store.id_store}"
+                                    th:text="${store.nom_store}">
+                            </option>
+                        </select>
+                        <small th:if="${#fields.hasErrors('onlineStore')}"
+                               th:errors="*{onlineStore}" class="form-error"></small>
+                    </div>
+                </div>
+
+                <!-- Image Upload -->
+                <div class="form-section">
+                    <h2 class="section-title">🖼️ Images</h2>
+
+                    <div class="file-upload-area" id="imageUploadArea">
+                        <input type="file" id="imageFiles" name="imageFiles"
+                               multiple accept="image/*" class="file-input">
+                        <div class="upload-placeholder">
+                            <p>📤 Drag and drop images here or click to browse</p>
+                            <small>Max 5 images, each up to 5MB</small>
+                        </div>
+                    </div>
+                    <div class="image-preview" id="imagePreview"></div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary">
+                        💾 Save as Draft
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        🚀 Publish Ad
+                    </button>
+                    <a href="#" th:href="@{/seller/ads}" class="btn btn-outline">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/seller-ads.js}"></script>
+</body>
+</html>

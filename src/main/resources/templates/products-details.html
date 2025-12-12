@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Ouedkniss Marketplace</title>
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+    <link rel="stylesheet" th:href="@{/css/order.css}">
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="navbar-container">
+        <div class="navbar-brand">
+            <a th:href="@{/}" class="brand-title">Ouedkniss</a>
+        </div>
+        <div class="navbar-actions">
+            <a th:href="@{/}" class="nav-link">Continue Shopping</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="checkout-container">
+    <div class="page-header">
+        <h1>Checkout</h1>
+        <p>Review and confirm your order</p>
+    </div>
+
+    <!-- Error Message -->
+    <div th:if="${errorMessage}" class="alert alert-danger">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <div class="checkout-content">
+        <!-- Left Column: Order Summary -->
+        <div class="order-section">
+            <h2 class="section-title">Order Summary</h2>
+
+            <div class="cart-items">
+                <!-- Cart Items Table -->
+                <table class="items-table">
+                    <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-right">Unit Price</th>
+                        <th class="text-right">Total</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Iterate through cart items -->
+                    <tr th:each="item : ${cartItems}" class="cart-item-row">
+                        <td>
+                            <div class="item-info">
+                                <span class="item-name" th:text="${item.product.nom_post}"></span>
+                                <small class="item-id" th:text="'ID: ' + ${item.product.id}"></small>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="quantity-display">
+                                <span th:text="${item.quantity}"></span>
+                            </div>
+                        </td>
+                        <td class="text-right">
+                            <span class="price" th:text="'DA ' + ${item.product.price}"></span>
+                        </td>
+                        <td class="text-right">
+                                    <span class="line-total"
+                                          th:text="'DA ' + ${item.quantity * item.product.price}">
+                                    </span>
+                        </td>
+                        <td>
+                            <a href="#" class="btn-remove" data-item-id="">✕</a>
+                        </td>
+                    </tr>
+
+                    <!-- Empty State -->
+                    <tr th:if="${cartItems.isEmpty()}">
+                        <td colspan="5" class="text-center empty-state">
+                            <p>Your cart is empty</p>
+                            <a href="#" th:href="@{/}" class="btn btn-primary">Continue Shopping</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Order Totals -->
+            <div class="order-totals">
+                <div class="total-row">
+                    <span class="total-label">Subtotal:</span>
+                    <span class="total-value" id="subtotal" th:text="'DA ' + ${totalAmount}"></span>
+                </div>
+                <div class="total-row">
+                    <span class="total-label">Shipping:</span>
+                    <span class="total-value" id="shipping">DA 500</span>
+                </div>
+                <div class="total-row" id="discountRow" style="display: none;">
+                    <span class="total-label">Discount:</span>
+                    <span class="total-value discount" id="discount">-DA 0</span>
+                </div>
+                <div class="total-row divider"></div>
+                <div class="total-row grand-total">
+                    <span class="total-label">Total:</span>
+                    <span class="total-value" id="grandTotal" th:text="'DA ' + ${totalAmount + 500}"></span>
+                </div>
+            </div>
+
+            <!-- Promo Code -->
+            <div class="promo-section">
+                <label class="form-label">Promo Code (optional)</label>
+                <div class="promo-input-group">
+                    <input type="text" id="promoCode" class="form-control"
+                           placeholder="Enter promo code">
+                    <button type="button" class="btn btn-secondary" id="applyPromo">Apply</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Delivery & Payment -->
+        <div class="delivery-section">
+
+            <!-- Delivery Form -->
+            <form th:action="@{/orders/new}" method="POST" th:object="${orderForm}"
+                  class="checkout-form" novalidate>
+
+                <h2 class="section-title">Delivery Information</h2>
+
+                <div class="form-group">
+                    <label for="fullName" class="form-label">Full Name *</label>
+                    <input type="text" id="fullName" th:field="*{fullName}"
+                           class="form-control" placeholder="Your full name" required>
+                    <small th:if="${#fields.hasErrors('fullName')}"
+                           th:errors="*{fullName}" class="form-error"></small>
+                </div>
+
+                <div class="form-group">
+                    <label for="address" class="form-label">Delivery Address *</label>
+                    <input type="text" id="address" th:field="*{address}"
+                           class="form-control" placeholder="Street address" required>
+                    <small th:if="${#fields.hasErrors('address')}"
+                           th:errors="*{address}" class="form-error"></small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="city" class="form-label">City *</label>
+                        <input type="text" id="city" th:field="*{city}"
+                               class="form-control" placeholder="City" required>
+                        <small th:if="${#fields.hasErrors('city')}"
+                               th:errors="*{city}" class="form-error"></small>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label for="postalCode" class="form-label">Postal Code *</label>
+                        <input type="text" id="postalCode" th:field="*{postalCode}"
+                               class="form-control" placeholder="16000" required>
+                        <small th:if="${#fields.hasErrors('postalCode')}"
+                               th:errors="*{postalCode}" class="form-error"></small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone" class="form-label">Phone Number *</label>
+                    <input type="tel" id="phone" th:field="*{phone}"
+                           class="form-control" placeholder="+213 55 123 45 67" required>
+                    <small th:if="${#fields.hasErrors('phone')}"
+                           th:errors="*{phone}" class="form-error"></small>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes" class="form-label">Delivery Notes (optional)</label>
+                    <textarea id="notes" th:field="*{deliveryNotes}"
+                              class="form-control" rows="3"
+                              placeholder="e.g. Ring the doorbell twice"></textarea>
+                </div>
+
+                <!-- Payment Section -->
+                <h2 class="section-title">Payment Method</h2>
+
+                <div class="payment-methods">
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="CASH_ON_DELIVERY" checked>
+                        <span class="payment-label">
+                                <strong>💵 Cash on Delivery</strong>
+                                <small>Pay when you receive your order</small>
+                            </span>
+                    </label>
+
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="CARD">
+                        <span class="payment-label">
+                                <strong>💳 Credit/Debit Card</strong>
+                                <small>Secure online payment</small>
+                            </span>
+                    </label>
+
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="BANK_TRANSFER">
+                        <span class="payment-label">
+                                <strong>🏦 Bank Transfer</strong>
+                                <small>Transfer directly to our bank account</small>
+                            </span>
+                    </label>
+                </div>
+
+                <!-- Card Payment (hidden by default) -->
+                <div id="cardPaymentSection" class="card-payment-section" style="display: none;">
+                    <div class="form-group">
+                        <label for="cardNumber" class="form-label">Card Number</label>
+                        <input type="text" id="cardNumber" class="form-control"
+                               placeholder="1234 5678 9012 3456" maxlength="19">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="expiryDate" class="form-label">Expiry Date</label>
+                            <input type="text" id="expiryDate" class="form-control"
+                                   placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="cvv" class="form-label">CVV</label>
+                            <input type="text" id="cvv" class="form-control"
+                                   placeholder="123" maxlength="3">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Status -->
+                <div class="order-status-section">
+                    <h3 class="status-title">Order Status</h3>
+                    <div class="status-badge" th:text="${orderForm.etat}">PENDING</div>
+                </div>
+
+                <!-- Terms & Conditions -->
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="terms" name="agreeTerms" required>
+                    <label for="terms" class="checkbox-label">
+                        I agree to the <a href="#" class="link">Terms & Conditions</a> and
+                        <a href="#" class="link">Return Policy</a>
+                    </label>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="checkout-actions">
+                    <a href="#" th:href="@{/}" class="btn btn-outline btn-block">
+                        ← Back to Shopping
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg btn-block">
+                        ✓ Place Order
+                    </button>
+                </div>
+
+                <!-- Security Badge -->
+                <div class="security-badge">
+                    <span>🔒 Secure Payment</span>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/order.js}"></script>
+</body>
+</html>
