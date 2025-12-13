@@ -1,4 +1,3 @@
-// modules/store/domain/Store.java
 package com.example.project_al.modules.stores.domain;
 
 import com.example.project_al.modules.catalog.domain.Product;
@@ -16,55 +15,48 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Store extends BaseEntity {
 
     @Column(name = "id_score")
-    private Integer idScore;  // From UML: Id_Score:int
+    private Integer idScore;
 
     @Column(name = "nom_store", nullable = false)
-    private String nomStore;  // From UML: Nom_Store<String
-
-    @Column(name = "city")
-    private String city;
+    private String nomStore;
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Post> posts = new ArrayList<>();  // From UML: store_postsList=Posts>
+    private List<Post> storePosts = new ArrayList<>();
 
-    @ManyToOne
+    @Column(name = "content")
+    private String content;
+
+    @Column(name = "domains")
+    private String domains;
+
+    @Column(name = "ciggote")
+    private String ciggote;
+
+    @Column(name = "grade")
+    private String grade;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id")
     private Seller seller;
 
-    @Column(name = "domains")
-    private String domains;  // From UML: +domains<String
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Product> products = new ArrayList<>();
 
-    @Column(name = "ciggote")
-    private String ciggote;  // From UML: +ciggote<String
-
-    @Column(name = "grade")
-    private String grade;  // From UML: -Grade<String
-    @Id
-    private Long id;
-
-    // From UML: + verify_city_pro(Product)int
-    public int verifyCityProduct(Product product) {
-        // Logic to verify if product is available in store's city
-        // Return some verification score
-        return product.getQuantity() > 0 ? 100 : 0;
+    public int verifyCityPro(Product product) {
+        // Implémentation de la vérification
+        return product != null ? 100 : 0;
     }
 
-    // From UML: +confirm(order)
-    public boolean confirmOrder(com.example.project_al.modules.order.domain.Order order) {
-        // Logic to confirm order
-        return order != null && order.getOrderItems().stream()
-                .allMatch(item -> item.getProduct().getQuantity() >= item.getQuantity());
+    public void confirm(com.example.project_al.modules.order.domain.Order order) {
+        // Implémentation de la confirmation
+        System.out.println("Order confirmed: " + order.getId());
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return id;
+    public void operation3() {
+        System.out.println("Store operation3 executed");
     }
 }
-

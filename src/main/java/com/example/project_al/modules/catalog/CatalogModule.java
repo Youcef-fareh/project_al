@@ -1,4 +1,10 @@
 package com.example.project_al.modules.catalog;
 
-public class CatalogModule {
+import org.springframework.modulith.ApplicationModule;
+
+@ApplicationModule(
+        type = ApplicationModule.Type.OPEN,
+        displayName = "Product Catalog"
+)
+public interface CatalogModule {
 }

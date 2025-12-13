@@ -1,6 +1,6 @@
-// modules/store/domain/Post.java
 package com.example.project_al.modules.stores.domain;
 
+import com.example.project_al.modules.stores.domain.Store;
 import com.example.project_al.shared.kernel.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,42 +15,42 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Post extends BaseEntity {
 
     @Column(name = "post_list_id")
-    private Integer postListId;  // From UML: Post_Listnt
+    private Integer postListId;
 
     @Column(name = "nom_post")
-    private String nomPost;  // From UML: Nom_post.String
+    private String nomPost;
 
     @Column(name = "date_creation")
-    private LocalDateTime dateCreation;  // From UML: date_cretionDate
+    private LocalDateTime dateCreation;
 
     @Column(name = "type")
-    private String type;  // From UML: type.String
+    private String type;
 
     @ElementCollection
-    @CollectionTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"))
-    @Column(name = "tag")
-    private List<String> modClassList = new ArrayList<>();  // From UML: +mod_classlist<String>
+    @CollectionTable(name = "post_mod_class", joinColumns = @JoinColumn(name = "post_id"))
+    @Column(name = "mod_class")
+    private List<String> modClassList = new ArrayList<>();
 
     @Column(name = "description", columnDefinition = "TEXT")
-    private String description;  // From UML: -Description.String
+    private String description;
 
-    @Column(name = "content", columnDefinition = "TEXT")
-    private String content;  // From UML: -Content<String
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
     private Store store;
-    @Id
-    private Long id;
 
-    public void setId(Long id) {
-        this.id = id;
+    public String operation1(String params1) {
+        return "Post operation1: " + params1;
     }
 
-    public Long getId() {
-        return id;
+    public void operation2(String params1) {
+        System.out.println("Post operation2 with param: " + params1);
+    }
+
+    public void operation3() {
+        System.out.println("Post operation3 executed");
     }
 }

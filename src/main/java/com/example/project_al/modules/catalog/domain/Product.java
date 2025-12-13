@@ -1,6 +1,6 @@
-// modules/catalog/domain/Product.java
 package com.example.project_al.modules.catalog.domain;
 
+import com.example.project_al.modules.stores.domain.Store;
 import com.example.project_al.shared.kernel.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,62 +15,69 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Product extends BaseEntity {
 
-    @Column(columnDefinition = "TEXT")
-    private String description;  // From UML: Description.String
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;  // From UML: PriceFloat (using BigDecimal for accuracy)
+    @Column(name = "price", nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
 
-    @Column(columnDefinition = "TEXT")
-    private String options;  // From UML: options.String
+    @Column(name = "options", columnDefinition = "TEXT")
+    private String options;
 
-    @Column(nullable = false)
-    private Integer quantity;  // From UML: QuantityInt
+    @Column(name = "quantity", nullable = false)
+    private Integer quantity;
 
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "sku", unique = true)
     private String sku;
+
+    @Column(name = "image_url")
     private String imageUrl;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
-    private com.example.project_al.modules.stores.domain.Store store;
+    private Store store;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
-    @Id
-    private Long id;
 
-    // From UML: command()
-    public void markAsCommanded() {
-        // Logic when product is commanded
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Review> reviews = new ArrayList<>();
+
+    public void command() {
         System.out.println("Product " + name + " has been commanded");
     }
 
-    // From UML: echovec_option()
-    public String echoOption() {
-        return "Option: " + options;
+    public String echovecOption() {
+        return "Echovec option: " + options;
     }
 
-    // From UML: idspontedList()
-    public List<String> getSponsoredList() {
-        // Return list of sponsored attributes
-        List<String> sponsored = new ArrayList<>();
-        if (price.compareTo(new BigDecimal("100")) > 0) {
-            sponsored.add("PREMIUM");
+    public List<String> idspontedList() {
+        List<String> sponsoredList = new ArrayList<>();
+        if (price.compareTo(new BigDecimal("50")) > 0) {
+            sponsoredList.add("SPONSORED");
         }
-        return sponsored;
+        return sponsoredList;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void operations3() {
+        System.out.println("Product operations3 executed");
     }
 
-    public Long getId() {
-        return id;
+    public void reduceQuantity(Integer amount) {
+        if (this.quantity < amount) {
+            throw new RuntimeException("Insufficient stock for product: " + name);
+        }
+        this.quantity -= amount;
+    }
+
+    public void increaseQuantity(Integer amount) {
+        this.quantity += amount;
     }
 }

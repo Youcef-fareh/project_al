@@ -1,8 +1,5 @@
-
-// modules/user/domain/Follow.java (Optional - for tracking follow relationships)
 package com.example.project_al.modules.user.domain;
 
-import com.example.project_al.modules.user.domain.Buyer;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,18 +11,21 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Follow {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "follower_id")
-    private Buyer follower;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "buyer_id")
+    private Buyer buyer;
 
-    @ManyToOne
-    @JoinColumn(name = "following_id")
-    private Seller following;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id")
+    private Seller seller;
 
+    @Column(name = "followed_at")
     private LocalDateTime followedAt = LocalDateTime.now();
 }
