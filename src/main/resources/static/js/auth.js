@@ -1,149 +1,327 @@
-/* ========================================
-   AUTHENTICATION SCRIPTS (login.html, signup.html)
-   ======================================== */
+/**
+ * Authentication Service
+ * Handles user authentication, session management
+ */
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Form validation
-    const authForm = document.querySelector('.auth-form');
-    if (authForm) {
-        authForm.addEventListener('submit', function(e) {
-            if (!validateForm(this)) {
-                e.preventDefault();
+class AuthService {
+    constructor() {
+        this.user = null;
+        this.isAuthenticated = false;
+        this.listeners = [];
+    }
+
+    /**
+     * Subscribe to auth changes
+     */
+    subscribe(callback) {
+        this.listeners.push(callback);
+        return () => {
+            this.listeners = this.listeners.filter(l => l !== callback);
+        };
+    }
+
+    /**
+     * Notify listeners of auth changes
+     */
+    notify() {
+        this.listeners.forEach(callback => callback(this.isAuthenticated, this.user));
+    }
+
+    /**
+     * Register new user
+     */
+    async register(email, password, name) {
+        try {
+            const response = await UserAPI.register({ email, password, name });
+            this.setUser(response.user, response.token);
+            return response;
+        } catch (error) {
+            Log.error('Registration failed', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Login user
+     */
+    async login(email, password) {
+        try {
+            const response = await UserAPI.login(email, password);
+            this.setUser(response.user, response.token);
+            return response;
+        } catch (error) {
+            Log.error('Login failed', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Logout user
+     */
+    async logout() {
+        try {
+            await UserAPI.logout();
+            this.clearUser();
+        } catch (error) {
+            Log.error('Logout failed', error);
+            this.clearUser();
+        }
+    }
+
+    /**
+     * Set user and token
+     */
+    setUser(user, token) {
+        this.user = user;
+        this.isAuthenticated = true;
+        Storage.set('auth_token', token);
+        Storage.set('auth_user', user);
+        this.notify();
+    }
+
+    /**
+     * Clear user and token
+     */
+    clearUser() {
+        this.user = null;
+        this.isAuthenticated = false;
+        Storage.remove('auth_token');
+        Storage.remove('auth_user');
+        this.notify();
+    }
+
+    /**
+     * Get current user
+     */
+    getUser() {
+        return this.user || Storage.get('auth_user');
+    }
+
+    /**
+     * Check if user is authenticated
+     */
+    isLoggedIn() {
+        return !!Storage.get('auth_token');
+    }
+
+    /**
+     * Refresh user session
+     */
+    async refreshSession() {
+        try {
+            const response = await UserAPI.getCurrentUser();
+            this.user = response;
+            Storage.set('auth_user', response);
+            return response;
+        } catch (error) {
+            this.clearUser();
+            throw error;
+        }
+    }
+
+    /**
+     * Update user profile
+     */
+    async updateProfile(data) {
+        try {
+            const response = await UserAPI.updateProfile(data);
+            this.setUser(response, Storage.get('auth_token'));
+            return response;
+        } catch (error) {
+            Log.error('Profile update failed', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Check if user has permission
+     */
+    hasPermission(permission) {
+        if (!this.user) return false;
+        return this.user.permissions?.includes(permission) || this.user.role === 'admin';
+    }
+}
+
+/**
+ * Permission Guard
+ */
+class PermissionGuard {
+    constructor(authService) {
+        this.auth = authService;
+    }
+
+    /**
+     * Require authentication
+     */
+    requireAuth(callback) {
+        if (!this.auth.isLoggedIn()) {
+            this.redirectToLogin();
+            return;
+        }
+        callback();
+    }
+
+    /**
+     * Require specific permission
+     */
+    requirePermission(permission, callback) {
+        if (!this.auth.hasPermission(permission)) {
+            this.redirectToUnauthorized();
+            return;
+        }
+        callback();
+    }
+
+    /**
+     * Require specific role
+     */
+    requireRole(role, callback) {
+        if (this.auth.getUser()?.role !== role) {
+            this.redirectToUnauthorized();
+            return;
+        }
+        callback();
+    }
+
+    /**
+     * Redirect to login
+     */
+    redirectToLogin() {
+        window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+    }
+
+    /**
+     * Redirect to unauthorized page
+     */
+    redirectToUnauthorized() {
+        window.location.href = '/unauthorized';
+    }
+}
+
+/**
+ * Session Manager
+ */
+class SessionManager {
+    constructor(authService, timeout = 30 * 60 * 1000) { // 30 minutes default
+        this.auth = authService;
+        this.timeout = timeout;
+        this.timeoutId = null;
+        this.warningTime = 5 * 60 * 1000; // Warn 5 minutes before timeout
+        this.init();
+    }
+
+    /**
+     * Initialize session manager
+     */
+    init() {
+        if (this.auth.isLoggedIn()) {
+            this.startSessionTimer();
+            this.attachActivityListeners();
+        }
+
+        this.auth.subscribe((isAuthenticated) => {
+            if (isAuthenticated) {
+                this.startSessionTimer();
+                this.attachActivityListeners();
+            } else {
+                this.clearSessionTimer();
+                this.removeActivityListeners();
             }
         });
     }
 
-    // Password strength indicator for signup
-    const passwordInputs = document.querySelectorAll('[data-password-field="true"]');
-    passwordInputs.forEach(input => {
-        input.addEventListener('input', updatePasswordStrength);
-    });
-
-    // Confirm password validation for signup
-    const confirmPasswordInput = document.getElementById('confirmPassword');
-    if (confirmPasswordInput) {
-        confirmPasswordInput.addEventListener('blur', validatePasswordMatch);
-    }
-});
-
-/**
- * Validates form fields (email, password not empty)
- */
-function validateForm(form) {
-    const emailInput = form.querySelector('input[type="email"]');
-    const passwordInput = form.querySelector('input[type="password"]');
-
-    let isValid = true;
-
-    // Validate email
-    if (!emailInput.value.trim()) {
-        emailInput.classList.add('is-invalid');
-        isValid = false;
-    } else {
-        emailInput.classList.remove('is-invalid');
+    /**
+     * Start session timer
+     */
+    startSessionTimer() {
+        this.clearSessionTimer();
+        this.timeoutId = setTimeout(() => {
+            this.handleTimeout();
+        }, this.timeout);
     }
 
-    // Validate password
-    if (!passwordInput.value.trim()) {
-        passwordInput.classList.add('is-invalid');
-        isValid = false;
-    } else {
-        passwordInput.classList.remove('is-invalid');
-    }
-
-    return isValid;
-}
-
-/**
- * Updates password strength indicator
- */
-function updatePasswordStrength(e) {
-    const password = e.target.value;
-    const strengthBar = e.target.nextElementSibling?.querySelector('.strength-bar');
-    const strengthText = e.target.nextElementSibling?.querySelector('.strength-text');
-
-    if (!strengthBar || !strengthText) return;
-
-    let strength = 0;
-    const strengthAfter = strengthBar.style.color;
-
-    // Check length
-    if (password.length >= 8) strength += 25;
-    if (password.length >= 12) strength += 25;
-
-    // Check for uppercase
-    if (/[A-Z]/.test(password)) strength += 25;
-
-    // Check for numbers
-    if (/[0-9]/.test(password)) strength += 25;
-
-    // Update bar
-    const barAfter = strengthBar.querySelector('::after') || strengthBar;
-    if (barAfter) {
-        barAfter.style.width = strength + '%';
-    }
-
-    // Update text
-    let strengthLabel = '';
-    if (strength === 0) {
-        strengthLabel = 'Weak password';
-        strengthBar.style.backgroundColor = '#d62828';
-    } else if (strength < 50) {
-        strengthLabel = 'Fair password';
-        strengthBar.style.backgroundColor = '#f77f00';
-    } else if (strength < 75) {
-        strengthLabel = 'Good password';
-        strengthBar.style.backgroundColor = '#ffc914';
-    } else {
-        strengthLabel = 'Strong password';
-        strengthBar.style.backgroundColor = '#06a77d';
-    }
-
-    strengthText.textContent = strengthLabel;
-}
-
-/**
- * Validates that confirm password matches password
- */
-function validatePasswordMatch(e) {
-    const confirmPassword = e.target.value;
-    const password = document.getElementById('password')?.value;
-    const errorElement = document.getElementById('confirmPasswordError');
-
-    if (!password || !confirmPassword) return;
-
-    if (confirmPassword !== password) {
-        e.target.classList.add('is-invalid');
-        if (errorElement) {
-            errorElement.textContent = 'Passwords do not match';
-        }
-    } else {
-        e.target.classList.remove('is-invalid');
-        if (errorElement) {
-            errorElement.textContent = '';
+    /**
+     * Clear session timer
+     */
+    clearSessionTimer() {
+        if (this.timeoutId) {
+            clearTimeout(this.timeoutId);
         }
     }
+
+    /**
+     * Reset session timer on activity
+     */
+    resetTimer() {
+        if (this.auth.isLoggedIn()) {
+            this.startSessionTimer();
+        }
+    }
+
+    /**
+     * Handle session timeout
+     */
+    handleTimeout() {
+        this.auth.logout();
+        this.showTimeoutMessage();
+    }
+
+    /**
+     * Show timeout message
+     */
+    showTimeoutMessage() {
+        alert('Your session has expired. Please login again.');
+        window.location.href = '/login';
+    }
+
+    /**
+     * Attach activity listeners
+     */
+    attachActivityListeners() {
+        const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+        const handler = () => this.resetTimer();
+
+        events.forEach(event => {
+            document.addEventListener(event, handler);
+        });
+    }
+
+    /**
+     * Remove activity listeners
+     */
+    removeActivityListeners() {
+        const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+        const handler = () => this.resetTimer();
+
+        events.forEach(event => {
+            document.removeEventListener(event, handler);
+        });
+    }
 }
 
-/**
- * Add visual feedback for input focus
- */
-document.querySelectorAll('.form-control').forEach(input => {
-    input.addEventListener('focus', function() {
-        this.classList.add('is-focused');
-    });
+// Initialize auth service
+const authService = new AuthService();
 
-    input.addEventListener('blur', function() {
-        this.classList.remove('is-focused');
-    });
-});
+// Check if user was previously logged in
+if (Storage.get('auth_token') && Storage.get('auth_user')) {
+    authService.user = Storage.get('auth_user');
+    authService.isAuthenticated = true;
+}
 
-/**
- * Toggle password visibility (optional enhancement)
- */
-function togglePasswordVisibility(inputId) {
-    const input = document.getElementById(inputId);
-    if (input) {
-        input.type = input.type === 'password' ? 'text' : 'password';
-    }
+// Initialize permission guard
+const permissionGuard = new PermissionGuard(authService);
+
+// Initialize session manager
+const sessionManager = new SessionManager(authService);
+
+// Export for use in other modules
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        AuthService,
+        PermissionGuard,
+        SessionManager,
+        authService,
+        permissionGuard,
+        sessionManager
+    };
 }

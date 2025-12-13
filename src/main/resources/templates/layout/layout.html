@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Oudkeniss - E-Commerce Platform">
+    <title th:text="${title != null} ? ${title} + ' | Oudkeniss' : 'Oudkeniss - Shop & Sell Anywhere'">Oudkeniss</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+</head>
+<body>
+<!-- Header Navigation -->
+<header th:replace="layout/header :: header"></header>
+
+<!-- Main Content -->
+<main th:block="${content}">
+    <!-- Page content goes here -->
+</main>
+
+<!-- Footer -->
+<footer th:replace="layout/footer :: footer"></footer>
+
+<!-- Scripts -->
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script th:block="${additionalScripts}"></script>
+</body>
+</html>

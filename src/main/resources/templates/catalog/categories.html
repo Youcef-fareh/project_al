@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Categories - Oudkeniss">
+    <title>Categories - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/header :: header"></header>
+
+<main class="container py-lg">
+    <h1 class="text-4xl font-bold mb-lg">Shop by Categories</h1>
+    <p class="text-secondary text-lg mb-2xl">Explore our wide range of products organized by category</p>
+
+    <!-- Featured Categories Banner -->
+    <div class="grid grid-cols-1 grid-cols-md-2 gap-lg mb-2xl">
+        <div class="card" style="min-height: 300px; display: flex; flex-direction: column; justify-content: flex-end; background-color: var(--bg-secondary);">
+            <div class="card-body">
+                <h2 class="text-3xl font-bold mb-md">Electronics</h2>
+                <p class="text-secondary mb-lg">Discover latest gadgets and tech products</p>
+                <a href="/products?category=electronics" class="btn btn-primary inline-block">Browse Electronics</a>
+            </div>
+        </div>
+
+        <div class="card" style="min-height: 300px; display: flex; flex-direction: column; justify-content: flex-end; background-color: var(--bg-secondary);">
+            <div class="card-body">
+                <h2 class="text-3xl font-bold mb-md">Fashion</h2>
+                <p class="text-secondary mb-lg">Latest trends in clothing and accessories</p>
+                <a href="/products?category=fashion" class="btn btn-primary inline-block">Browse Fashion</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Categories Grid -->
+    <h2 class="text-2xl font-bold mb-lg mt-2xl">All Categories</h2>
+
+    <div class="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-3 gap-lg mb-2xl" id="categoriesGrid">
+        <!-- Categories loaded here -->
+        <div class="col-span-3 flex justify-center py-2xl">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- Subcategories Section -->
+    <h2 class="text-2xl font-bold mb-lg mt-2xl">Popular Subcategories</h2>
+
+    <div class="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-4 gap-lg" id="subcategoriesGrid">
+        <!-- Subcategories loaded here -->
+    </div>
+
+    <!-- Browse by Price -->
+    <div class="mt-2xl pt-2xl border-top">
+        <h2 class="text-2xl font-bold mb-lg">Browse by Price Range</h2>
+        <div class="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-4 gap-lg">
+            <a href="/products?price=0-50" class="card p-lg text-center hover:shadow-md transition-all cursor-pointer">
+                <p class="text-2xl font-bold text-primary mb-sm">$0 - $50</p>
+                <p class="text-secondary text-sm">Budget Friendly</p>
+                <p class="text-sm mt-lg text-secondary">1,234 products</p>
+            </a>
+            <a href="/products?price=50-100" class="card p-lg text-center hover:shadow-md transition-all cursor-pointer">
+                <p class="text-2xl font-bold text-primary mb-sm">$50 - $100</p>
+                <p class="text-secondary text-sm">Mid Range</p>
+                <p class="text-sm mt-lg text-secondary">2,456 products</p>
+            </a>
+            <a href="/products?price=100-500" class="card p-lg text-center hover:shadow-md transition-all cursor-pointer">
+                <p class="text-2xl font-bold text-primary mb-sm">$100 - $500</p>
+                <p class="text-secondary text-sm">Premium</p>
+                <p class="text-sm mt-lg text-secondary">3,789 products</p>
+            </a>
+            <a href="/products?price=500-999999" class="card p-lg text-center hover:shadow-md transition-all cursor-pointer">
+                <p class="text-2xl font-bold text-primary mb-sm">$500+</p>
+                <p class="text-secondary text-sm">Luxury</p>
+                <p class="text-sm mt-lg text-secondary">567 products</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Best Sellers by Category -->
+    <div class="mt-2xl pt-2xl border-top">
+        <h2 class="text-2xl font-bold mb-lg">Best Sellers</h2>
+        <div class="grid grid-cols-1 grid-cols-md-2 gap-lg">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="font-bold text-lg">📱 Electronics</h3>
+                </div>
+                <div class="card-body">
+                    <div class="flex flex-col gap-md">
+                        <a href="#" class="flex gap-md pb-md border-bottom hover:text-primary">
+                            <div style="width: 60px; height: 60px; background-color: var(--bg-tertiary); border-radius: 4px; flex-shrink: 0;"></div>
+                            <div>
+                                <p class="font-semibold line-clamp-2">Wireless Headphones Pro</p>
+                                <p class="text-primary font-bold text-sm">$199.99</p>
+                            </div>
+                        </a>
+                        <a href="#" class="flex gap-md pb-md border-bottom hover:text-primary">
+                            <div style="width: 60px; height: 60px; background-color: var(--bg-tertiary); border-radius: 4px; flex-shrink: 0;"></div>
+                            <div>
+                                <p class="font-semibold line-clamp-2">USB-C Power Bank</p>
+                                <p class="text-primary font-bold text-sm">$49.99</p>
+                            </div>
+                        </a>
+                        <a href="#" class="flex gap-md hover:text-primary">
+                            <div style="width: 60px; height: 60px; background-color: var(--bg-tertiary); border-radius: 4px; flex-shrink: 0;"></div>
+                            <div>
+                                <p class="font-semibold line-clamp-2">Smart Watch</p>
+                                <p class="text-primary font-bold text-sm">$299.99</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="font-bold text-lg">👗 Fashion</h3>
+                </div>
+                <div class="card-body">
+                    <div class="flex flex-col gap-md">
+                        <a href="#" class="flex gap-md pb-md border-bottom hover:text-primary">
+                            <div style="width: 60px; height: 60px; background-color: var(--bg-tertiary); border-radius: 4px; flex-shrink: 0;"></div>
+                            <div>
+                                <p class="font-semibold line-clamp-2">Classic White T-Shirt</p>
+                                <p class="text-primary font-bold text-sm">$29.99</p>
+                            </div>
+                        </a>
+                        <a href="#" class="flex gap-md pb-md border-bottom hover:text-primary">
+                            <div style="width: 60px; height: 60px; background-color: var(--bg-tertiary); border-radius: 4px; flex-shrink: 0;"></div>
+                            <div>
+                                <p class="font-semibold line-clamp-2">Denim Jacket</p>
+                                <p class="text-primary font-bold text-sm">$89.99</p>
+                            </div>
+                        </a>
+                        <a href="#" class="flex gap-md hover:text-primary">
+                            <div style="width: 60px; height: 60px; background-color: var(--bg-tertiary); border-radius: 4px; flex-shrink: 0;"></div>
+                            <div>
+                                <p class="font-semibold line-clamp-2">Running Shoes</p>
+                                <p class="text-primary font-bold text-sm">$119.99</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    async function loadCategories() {
+        try {
+            const categories = await ProductAPI.getCategories();
+            renderCategories(categories);
+        } catch (error) {
+            Log.error('Failed to load categories', error);
+            app.showNotification('Failed to load categories', 'error');
+        }
+    }
+
+    function renderCategories(categories) {
+        const grid = DOM.get('#categoriesGrid');
+
+        if (categories.length === 0) {
+            grid.innerHTML = '<div class="col-span-3 text-center py-2xl"><p class="text-secondary">No categories found</p></div>';
+            return;
+        }
+
+        const categoryEmojis = {
+            'electronics': '📱',
+            'fashion': '👗',
+            'home': '🏠',
+            'sports': '⚽',
+            'books': '📚',
+            'beauty': '💄',
+            'toys': '🎮',
+            'health': '⚕️'
+        };
+
+        grid.innerHTML = categories.map(category => `
+                <a href="/products?category=${category.slug}" class="card hover:shadow-lg transition-all overflow-hidden cursor-pointer">
+                    <div style="width: 100%; height: 200px; background-color: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 4em;">
+                        ${categoryEmojis[category.slug.toLowerCase()] || '📦'}
+                    </div>
+                    <div class="card-body">
+                        <h3 class="font-bold text-lg mb-sm">${category.name}</h3>
+                        <p class="text-secondary text-sm mb-lg">${category.productCount} products</p>
+                        <button class="btn btn-primary btn-sm btn-block">Browse</button>
+                    </div>
+                </a>
+            `).join('');
+    }
+
+    // Initial load
+    document.addEventListener('app:init', loadCategories);
+</script>
+</body>
+</html>

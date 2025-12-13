@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sign In - Oudkeniss">
+    <title>Sign In - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body style="background-color: var(--bg-secondary);">
+<div class="flex items-center justify-center" style="min-height: 100vh; padding: var(--spacing-lg);">
+    <div class="container-sm">
+        <div class="card">
+            <div class="card-body p-2xl">
+                <h1 class="text-3xl font-bold text-center mb-lg">Sign In</h1>
+                <p class="text-center text-secondary mb-2xl">Welcome back to Oudkeniss</p>
+
+                <!-- Error Alert -->
+                <div id="errorAlert" class="alert alert-error hidden mb-lg"></div>
+
+                <form id="loginForm" class="flex flex-col gap-lg">
+                    <!-- Email -->
+                    <div class="form-group">
+                        <label class="form-label required" for="email">Email Address</label>
+                        <input type="email"
+                               id="email"
+                               class="form-input"
+                               placeholder="your@email.com"
+                               required>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group">
+                        <label class="form-label required" for="password">Password</label>
+                        <input type="password"
+                               id="password"
+                               class="form-input"
+                               placeholder="••••••••"
+                               required>
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="flex justify-between items-center">
+                        <label class="checkbox m-0">
+                            <input type="checkbox" id="rememberMe">
+                            Remember me
+                        </label>
+                        <a href="/forgot-password" class="text-primary text-sm font-semibold hover:underline">
+                            Forgot password?
+                        </a>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary btn-lg btn-block font-semibold">
+                        Sign In
+                    </button>
+
+                    <!-- Social Login -->
+                    <div class="flex flex-col gap-md mt-lg">
+                        <div class="text-center text-secondary text-sm">Or continue with</div>
+                        <div class="grid grid-cols-2 gap-md">
+                            <button type="button" class="btn btn-secondary btn-block">
+                                Google
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-block">
+                                Facebook
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sign Up Link -->
+                    <p class="text-center text-sm text-secondary">
+                        Don't have an account?
+                        <a href="/register" class="text-primary font-semibold hover:underline">Create one</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script>
+    const form = DOM.get('#loginForm');
+    const errorAlert = DOM.get('#errorAlert');
+
+    // Get redirect URL from query params
+    const params = new URLSearchParams(window.location.search);
+    const redirectUrl = params.get('redirect') || '/';
+
+    // Form submission
+    DOM.on(form, 'submit', async (e) => {
+        e.preventDefault();
+
+        const email = form.email.value.trim();
+        const password = form.password.value;
+
+        // Hide previous errors
+        DOM.addClass(errorAlert, 'hidden');
+
+        // Validate
+        if (!Validation.isEmail(email)) {
+            showError('Please enter a valid email address');
+            return;
+        }
+
+        if (!password) {
+            showError('Please enter your password');
+            return;
+        }
+
+        // Submit login
+        try {
+            const button = form.querySelector('button[type="submit"]');
+            button.disabled = true;
+            button.textContent = 'Signing in...';
+
+            await authService.login(email, password);
+
+            // Redirect to original page or home
+            window.location.href = redirectUrl;
+        } catch (error) {
+            button.disabled = false;
+            button.textContent = 'Sign In';
+            showError(error.message || 'Login failed. Please check your credentials.');
+        }
+    });
+
+    function showError(message) {
+        DOM.text(errorAlert, message);
+        DOM.removeClass(errorAlert, 'hidden');
+        errorAlert.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+</body>
+</html>

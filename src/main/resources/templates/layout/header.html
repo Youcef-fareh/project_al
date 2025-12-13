@@ -1,0 +1,67 @@
+<!-- Header Navigation Component -->
+<header xmlns:th="http://www.thymeleaf.org" th:fragment="header" class="sticky top-0 z-fixed bg-primary shadow-md">
+    <nav class="container py-md flex justify-between items-center">
+        <!-- Logo -->
+        <a href="/" class="text-2xl font-bold text-white flex items-center gap-md">
+            <span>Oudkeniss</span>
+        </a>
+
+        <!-- Main Navigation -->
+        <ul class="hidden-sm flex gap-lg items-center">
+            <li><a href="/products" class="text-white hover:text-gray-200">Products</a></li>
+            <li><a href="/stores" class="text-white hover:text-gray-200">Stores</a></li>
+            <li><a href="/categories" class="text-white hover:text-gray-200">Categories</a></li>
+        </ul>
+
+        <!-- Search Bar -->
+        <div class="hidden-sm flex-1 mx-lg">
+            <div class="flex items-center bg-white rounded-lg px-md py-sm">
+                <input type="search"
+                       placeholder="Search products..."
+                       class="form-input flex-1 bg-white border-none"
+                       data-search-input>
+                <button class="btn btn-icon" style="background: none; border: none;">
+                    🔍
+                </button>
+            </div>
+            <div class="hidden mt-md bg-white rounded-lg shadow-lg max-w-sm"
+                 data-search-results
+                 style="position: absolute; z-index: 1000; top: 100%; left: 50%; transform: translateX(-50%);"></div>
+        </div>
+
+        <!-- Right Actions -->
+        <div class="flex gap-lg items-center">
+            <!-- Cart -->
+            <a href="/cart" class="relative text-white hover:text-gray-200">
+                🛒
+                <span class="badge badge-primary absolute -top-2 -right-2 hidden" data-cart-count>0</span>
+            </a>
+
+            <!-- Notifications -->
+            <div class="relative" data-notifications>
+                <button class="text-white hover:text-gray-200">🔔</button>
+                <span class="badge badge-error absolute -top-2 -right-2 hidden" data-notification-badge>0</span>
+            </div>
+
+            <!-- Auth Menu -->
+            <div th:if="${session.user}" class="relative" style="color: white;">
+                <button onclick="document.getElementById('userDropdown').classList.toggle('hidden')"
+                        class="flex items-center gap-sm hover:text-gray-200">
+                    👤 <span th:text="${session.user.name}">User</span>
+                </button>
+                <div id="userDropdown" class="hidden absolute right-0 mt-md bg-white rounded-lg shadow-lg min-w-48 py-md z-dropdown">
+                    <a href="/profile" class="block px-lg py-sm hover:bg-gray-100">Profile</a>
+                    <a href="/orders" class="block px-lg py-sm hover:bg-gray-100">Orders</a>
+                    <a href="/seller-dashboard" class="block px-lg py-sm hover:bg-gray-100">Sell</a>
+                    <hr class="my-sm">
+                    <a href="/logout" class="block px-lg py-sm hover:bg-gray-100 text-error">Logout</a>
+                </div>
+            </div>
+
+            <!-- Login/Register -->
+            <div th:if="!${session.user}">
+                <a href="/login" class="btn btn-secondary btn-sm">Sign In</a>
+            </div>
+        </div>
+    </nav>
+</header>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Products - Oudkeniss">
+    <title>Products - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/header :: header"></header>
+
+<main class="container py-lg">
+    <!-- Page Title & Breadcrumb -->
+    <div class="mb-2xl">
+        <h1 class="text-4xl font-bold mb-md">Products</h1>
+        <nav class="flex gap-sm text-sm text-secondary">
+            <a href="/" class="hover:text-primary">Home</a>
+            <span>/</span>
+            <span class="text-primary">Products</span>
+        </nav>
+    </div>
+
+    <div class="grid grid-cols-1 grid-cols-lg-4 gap-lg">
+        <!-- Filters Sidebar -->
+        <aside class="hidden-md">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="font-bold">Filters</h3>
+                </div>
+                <div class="card-body flex flex-col gap-lg">
+                    <!-- Categories -->
+                    <div>
+                        <h4 class="font-semibold mb-md">Categories</h4>
+                        <div class="flex flex-col gap-sm">
+                            <label class="checkbox">
+                                <input type="checkbox" class="category-filter" value="electronics">
+                                Electronics
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" class="category-filter" value="fashion">
+                                Fashion
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" class="category-filter" value="home">
+                                Home & Garden
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" class="category-filter" value="sports">
+                                Sports & Outdoors
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Price Range -->
+                    <div>
+                        <h4 class="font-semibold mb-md">Price Range</h4>
+                        <div class="flex flex-col gap-md">
+                            <input type="range" id="priceRange" min="0" max="5000" value="5000" class="w-full">
+                            <div class="flex justify-between text-sm">
+                                <span>$0</span>
+                                <span>$<span id="priceValue">5000</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rating -->
+                    <div>
+                        <h4 class="font-semibold mb-md">Rating</h4>
+                        <div class="flex flex-col gap-sm">
+                            <label class="checkbox">
+                                <input type="checkbox" class="rating-filter" value="5">
+                                ⭐⭐⭐⭐⭐ 5 Stars
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" class="rating-filter" value="4">
+                                ⭐⭐⭐⭐ 4+ Stars
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" class="rating-filter" value="3">
+                                ⭐⭐⭐ 3+ Stars
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Apply Filters -->
+                    <button class="btn btn-primary btn-block" onclick="applyFilters()">Apply Filters</button>
+                    <button class="btn btn-secondary btn-block" onclick="resetFilters()">Reset</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Products Grid -->
+        <div class="col-span-3">
+            <!-- Top Bar -->
+            <div class="flex flex-col flex-md-row justify-between items-center gap-lg mb-lg">
+                <p class="text-secondary" id="resultCount">Showing <strong id="productCount">0</strong> products</p>
+
+                <select id="sortSelect" class="form-select" style="width: auto;">
+                    <option value="newest">Newest</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="rating">Rating</option>
+                    <option value="popular">Most Popular</option>
+                </select>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="productsGrid" class="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-3 gap-lg">
+                <!-- Loading spinner -->
+                <div class="col-span-3 flex justify-center py-2xl">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="flex justify-center mt-2xl">
+                <nav id="pagination" class="pagination">
+                    <!-- Pagination buttons -->
+                </nav>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 12;
+
+    // Filter event listeners
+    DOM.on(DOM.get('#priceRange'), 'input', (e) => {
+        DOM.text(DOM.get('#priceValue'), e.target.value);
+    });
+
+    DOM.on(DOM.get('#sortSelect'), 'change', () => {
+        currentPage = 1;
+        loadProducts();
+    });
+
+    async function loadProducts() {
+        try {
+            const categoryChecks = DOM.getAll('.category-filter:checked');
+            const ratingChecks = DOM.getAll('.rating-filter:checked');
+
+            const filters = {};
+            if (categoryChecks.length > 0) {
+                filters.categories = Array.from(categoryChecks).map(c => c.value);
+            }
+            if (ratingChecks.length > 0) {
+                filters.minRating = Math.min(...Array.from(ratingChecks).map(r => parseInt(r.value)));
+            }
+
+            const maxPrice = DOM.get('#priceRange').value;
+            filters.maxPrice = maxPrice;
+
+            const sort = DOM.get('#sortSelect').value;
+            if (sort) filters.sort = sort;
+
+            const response = await ProductAPI.getAllProducts(currentPage, ITEMS_PER_PAGE, filters);
+
+            renderProducts(response.items || []);
+            renderPagination(response.totalPages || 1);
+            DOM.text(DOM.get('#productCount'), response.total || 0);
+        } catch (error) {
+            Log.error('Failed to load products', error);
+            app.showNotification('Failed to load products', 'error');
+        }
+    }
+
+    function renderProducts(products) {
+        const grid = DOM.get('#productsGrid');
+
+        if (products.length === 0) {
+            grid.innerHTML = '<div class="col-span-3 text-center py-2xl"><p class="text-secondary">No products found</p></div>';
+            return;
+        }
+
+        grid.innerHTML = products.map(product => `
+                <a href="/products/${product.id}" class="card overflow-hidden hover:shadow-lg transition-all">
+                    <div style="width: 100%; height: 200px; background-color: var(--bg-tertiary); display: flex; align-items: center; justify-content: center;">
+                        📦
+                    </div>
+                    <div class="card-body">
+                        <h3 class="text-lg font-semibold line-clamp-2 mb-sm">${product.name}</h3>
+                        <p class="text-secondary text-sm mb-md">${product.category}</p>
+
+                        <div class="flex items-center gap-sm mb-md">
+                            <span class="text-sm">⭐ ${product.rating || 0}</span>
+                            <span class="text-sm text-secondary">(${product.reviews || 0})</span>
+                        </div>
+
+                        <p class="text-2xl font-bold text-primary mb-md">${String.formatCurrency(product.price)}</p>
+
+                        <button class="btn btn-primary btn-block" onclick="event.preventDefault(); addToCart(${product.id})">
+                            Add to Cart
+                        </button>
+                    </div>
+                </a>
+            `).join('');
+    }
+
+    function renderPagination(totalPages) {
+        const pagination = DOM.get('#pagination');
+        let html = '';
+
+        if (currentPage > 1) {
+            html += `<button onclick="goToPage(${currentPage - 1})" class="btn btn-secondary">← Previous</button>`;
+        }
+
+        for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+            html += `<button class="${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        }
+
+        if (currentPage < totalPages) {
+            html += `<button onclick="goToPage(${currentPage + 1})" class="btn btn-secondary">Next →</button>`;
+        }
+
+        pagination.innerHTML = html;
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        loadProducts();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function applyFilters() {
+        currentPage = 1;
+        loadProducts();
+    }
+
+    function resetFilters() {
+        DOM.getAll('.category-filter').forEach(el => el.checked = false);
+        DOM.getAll('.rating-filter').forEach(el => el.checked = false);
+        DOM.get('#priceRange').value = 5000;
+        DOM.text(DOM.get('#priceValue'), 5000);
+        DOM.get('#sortSelect').value = 'newest';
+        currentPage = 1;
+        loadProducts();
+    }
+
+    async function addToCart(productId) {
+        if (!authService.isLoggedIn()) {
+            window.location.href = '/login?redirect=/products';
+            return;
+        }
+
+        try {
+            await CartAPI.addToCart(productId, 1);
+            app.showNotification('Added to cart ✓', 'success');
+        } catch (error) {
+            app.showNotification('Failed to add to cart', 'error');
+        }
+    }
+
+    // Initial load
+    loadProducts();
+</script>
+</body>
+</html>

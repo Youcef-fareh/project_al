@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Store Details - Oudkeniss">
+    <title th:text="${store.name} + ' - Oudkeniss'">Store - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/header :: header"></header>
+
+<main>
+    <!-- Store Header -->
+    <div style="background-color: var(--bg-secondary); padding: var(--spacing-3xl);">
+        <div class="container">
+            <div class="grid grid-cols-1 grid-cols-lg-3 gap-lg items-start">
+                <!-- Store Info -->
+                <div class="col-span-2">
+                    <div class="flex gap-lg items-start">
+                        <div style="width: 120px; height: 120px; background-color: var(--bg-tertiary); border-radius: 8px; flex-shrink: 0; font-size: 3em; display: flex; align-items: center; justify-content: center;">
+                            🏪
+                        </div>
+                        <div>
+                            <h1 class="text-4xl font-bold mb-sm" th:text="${store.name}">Store Name</h1>
+                            <div class="flex gap-lg mb-lg">
+                                <div>
+                                    <p class="text-secondary text-sm">Rating</p>
+                                    <p class="font-semibold">⭐ <span th:text="${store.rating}">4.8</span> / 5</p>
+                                </div>
+                                <div>
+                                    <p class="text-secondary text-sm">Followers</p>
+                                    <p class="font-semibold"><span th:text="${store.followers}">5.2k</span> followers</p>
+                                </div>
+                                <div>
+                                    <p class="text-secondary text-sm">Products</p>
+                                    <p class="font-semibold"><span th:text="${store.productCount}">245</span> products</p>
+                                </div>
+                            </div>
+                            <p class="text-secondary" th:text="${store.description}">Store description goes here</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Store Actions -->
+                <div class="flex flex-col gap-md">
+                    <button class="btn btn-primary btn-block font-semibold" onclick="followStore()">
+                        ❤️ Follow Store
+                    </button>
+                    <button class="btn btn-secondary btn-block" onclick="contactStore()">
+                        💬 Contact
+                    </button>
+                    <button class="btn btn-outline btn-block" onclick="viewReviews()">
+                        ⭐ View Reviews
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Store Details & Filters -->
+    <div class="container py-lg">
+        <!-- Stats -->
+        <div class="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-4 gap-lg mb-2xl">
+            <div class="card">
+                <div class="card-body text-center">
+                    <p class="text-3xl font-bold text-primary mb-sm" th:text="${store.responseRate}">95%</p>
+                    <p class="text-secondary text-sm">Response Rate</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body text-center">
+                    <p class="text-3xl font-bold text-primary mb-sm" th:text="${store.responseTime}">2h</p>
+                    <p class="text-secondary text-sm">Response Time</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body text-center">
+                    <p class="text-3xl font-bold text-primary mb-sm" th:text="${store.positiveRating}">99%</p>
+                    <p class="text-secondary text-sm">Positive Feedback</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body text-center">
+                    <p class="text-3xl font-bold text-primary mb-sm" th:text="${store.memberSince}">2020</p>
+                    <p class="text-secondary text-sm">Member Since</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Sort -->
+        <div class="card mb-2xl p-lg">
+            <div class="flex flex-col flex-md-row gap-lg items-center justify-between">
+                <div class="flex-1 w-full">
+                    <input type="search"
+                           class="form-input"
+                           placeholder="Search store products..."
+                           id="storeProductSearch">
+                </div>
+                <div class="flex gap-lg">
+                    <select class="form-select" id="sortFilter" style="width: auto;">
+                        <option value="newest">Newest</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="popular">Most Popular</option>
+                    </select>
+                    <select class="form-select" id="categoryFilter" style="width: auto;">
+                        <option value="">All Categories</option>
+                        <option th:each="cat : ${store.categories}" th:value="${cat.id}" th:text="${cat.name}">Category</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div id="storeProductsGrid" class="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-4 gap-lg">
+            <!-- Products loaded here -->
+            <div class="col-span-4 flex justify-center py-2xl">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex justify-center mt-2xl">
+            <nav id="storePagination" class="pagination"></nav>
+        </div>
+    </div>
+
+    <!-- Store Reviews -->
+    <div style="background-color: var(--bg-secondary);">
+        <div class="container py-lg">
+            <h2 class="text-3xl font-bold mb-2xl">Store Reviews</h2>
+
+            <div class="grid grid-cols-1 grid-cols-lg-3 gap-lg">
+                <!-- Review Summary -->
+                <div class="card">
+                    <div class="card-body text-center">
+                        <p class="text-5xl font-bold text-primary mb-md" th:text="${store.rating}">4.8</p>
+                        <div class="flex justify-center mb-md text-lg">⭐⭐⭐⭐⭐</div>
+                        <p class="text-secondary text-sm">Based on <span th:text="${store.reviewCount}">450</span> reviews</p>
+                    </div>
+                </div>
+
+                <!-- Rating Distribution -->
+                <div class="col-span-2">
+                    <div class="flex flex-col gap-lg">
+                        <div class="flex gap-md items-center">
+                            <span class="w-12">5 ⭐</span>
+                            <div style="flex: 1; height: 8px; background-color: var(--bg-tertiary); border-radius: 4px;">
+                                <div style="height: 100%; width: 80%; background-color: var(--success); border-radius: 4px;"></div>
+                            </div>
+                            <span class="w-16 text-right text-sm">80%</span>
+                        </div>
+                        <div class="flex gap-md items-center">
+                            <span class="w-12">4 ⭐</span>
+                            <div style="flex: 1; height: 8px; background-color: var(--bg-tertiary); border-radius: 4px;">
+                                <div style="height: 100%; width: 15%; background-color: var(--info); border-radius: 4px;"></div>
+                            </div>
+                            <span class="w-16 text-right text-sm">15%</span>
+                        </div>
+                        <div class="flex gap-md items-center">
+                            <span class="w-12">3 ⭐</span>
+                            <div style="flex: 1; height: 8px; background-color: var(--bg-tertiary); border-radius: 4px;">
+                                <div style="height: 100%; width: 3%; background-color: var(--warning); border-radius: 4px;"></div>
+                            </div>
+                            <span class="w-16 text-right text-sm">3%</span>
+                        </div>
+                        <div class="flex gap-md items-center">
+                            <span class="w-12">2 ⭐</span>
+                            <div style="flex: 1; height: 8px; background-color: var(--bg-tertiary); border-radius: 4px;">
+                                <div style="height: 100%; width: 1%; background-color: var(--error); border-radius: 4px;"></div>
+                            </div>
+                            <span class="w-16 text-right text-sm">1%</span>
+                        </div>
+                        <div class="flex gap-md items-center">
+                            <span class="w-12">1 ⭐</span>
+                            <div style="flex: 1; height: 8px; background-color: var(--bg-tertiary); border-radius: 4px;">
+                                <div style="height: 100%; width: 1%; background-color: var(--error); border-radius: 4px;"></div>
+                            </div>
+                            <span class="w-16 text-right text-sm">1%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Reviews List -->
+            <div class="mt-2xl">
+                <h3 class="font-bold mb-lg">Latest Reviews</h3>
+                <div id="storeReviewsList" class="flex flex-col gap-lg">
+                    <!-- Reviews loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    const storeId = window.location.pathname.split('/').pop();
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 12;
+
+    async function loadStoreProducts() {
+        try {
+            const response = await StoreAPI.getStoreById(storeId);
+            renderProducts(response.products || []);
+        } catch (error) {
+            Log.error('Failed to load store products', error);
+        }
+    }
+
+    function renderProducts(products) {
+        const grid = DOM.get('#storeProductsGrid');
+
+        if (products.length === 0) {
+            grid.innerHTML = '<div class="col-span-4 text-center py-2xl"><p class="text-secondary">No products found</p></div>';
+            return;
+        }
+
+        grid.innerHTML = products.map(product => `
+                <a href="/products/${product.id}" class="card hover:shadow-lg transition-all overflow-hidden">
+                    <div style="width: 100%; height: 150px; background-color: var(--bg-tertiary); display: flex; align-items: center; justify-content: center;">
+                        📦
+                    </div>
+                    <div class="card-body">
+                        <h3 class="font-semibold line-clamp-2 mb-sm">${product.name}</h3>
+                        <p class="text-primary font-bold mb-md">${String.formatCurrency(product.price)}</p>
+                        <button class="btn btn-primary btn-block btn-sm" onclick="event.preventDefault(); addToCart(${product.id})">
+                            Add to Cart
+                        </button>
+                    </div>
+                </a>
+            `).join('');
+    }
+
+    async function addToCart(productId) {
+        if (!authService.isLoggedIn()) {
+            window.location.href = '/login';
+            return;
+        }
+
+        try {
+            await CartAPI.addToCart(productId, 1);
+            app.showNotification('Added to cart ✓', 'success');
+        } catch (error) {
+            app.showNotification('Failed to add to cart', 'error');
+        }
+    }
+
+    function followStore() {
+        if (!authService.isLoggedIn()) {
+            window.location.href = '/login';
+            return;
+        }
+        app.showNotification('Store followed ✓', 'success');
+    }
+
+    function contactStore() {
+        if (!authService.isLoggedIn()) {
+            window.location.href = '/login';
+            return;
+        }
+        app.showNotification('Message sent to store', 'success');
+    }
+
+    function viewReviews() {
+        document.querySelector('[href*="reviews"]')?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Initial load
+    document.addEventListener('app:init', loadStoreProducts);
+</script>
+</body>
+</html>

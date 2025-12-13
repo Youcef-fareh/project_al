@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Checkout - Oudkeniss">
+    <title>Checkout - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/header :: header"></header>
+
+<main class="container py-lg">
+    <h1 class="text-4xl font-bold mb-lg">Checkout</h1>
+
+    <div class="grid grid-cols-1 grid-cols-lg-3 gap-2xl">
+        <!-- Checkout Form -->
+        <div class="col-span-2">
+            <!-- Step 1: Shipping Address -->
+            <div class="card mb-lg">
+                <div class="card-header flex items-center gap-md">
+                    <div style="width: 40px; height: 40px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">1</div>
+                    <h2 class="font-bold text-lg">Shipping Address</h2>
+                </div>
+
+                <div class="card-body">
+                    <form id="shippingForm" class="flex flex-col gap-lg">
+                        <div class="grid grid-cols-1 grid-cols-md-2 gap-lg">
+                            <div class="form-group">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-input" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Street Address</label>
+                            <input type="text" class="form-input" required>
+                        </div>
+
+                        <div class="grid grid-cols-1 grid-cols-md-3 gap-lg">
+                            <div class="form-group">
+                                <label class="form-label">City</label>
+                                <input type="text" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">State/Province</label>
+                                <input type="text" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Postal Code</label>
+                                <input type="text" class="form-input" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Country</label>
+                            <select class="form-select" required>
+                                <option value="">Select Country</option>
+                                <option value="us">United States</option>
+                                <option value="ca">Canada</option>
+                                <option value="uk">United Kingdom</option>
+                                <option value="au">Australia</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group flex gap-md items-center">
+                            <input type="checkbox" id="shippingSame" checked>
+                            <label for="shippingSame" class="form-label m-0">Billing address same as shipping</label>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Step 2: Shipping Method -->
+            <div class="card mb-lg">
+                <div class="card-header flex items-center gap-md">
+                    <div style="width: 40px; height: 40px; background-color: var(--secondary-color); color: var(--text-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">2</div>
+                    <h2 class="font-bold text-lg">Shipping Method</h2>
+                </div>
+
+                <div class="card-body">
+                    <div class="flex flex-col gap-md">
+                        <label class="border border-primary rounded-lg p-lg cursor-pointer">
+                            <input type="radio" name="shipping" value="standard" checked>
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="font-bold">Standard Shipping</p>
+                                    <p class="text-secondary text-sm">Delivery in 5-7 business days</p>
+                                </div>
+                                <p class="font-bold">Free</p>
+                            </div>
+                        </label>
+
+                        <label class="border border-secondary rounded-lg p-lg cursor-pointer">
+                            <input type="radio" name="shipping" value="express">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="font-bold">Express Shipping</p>
+                                    <p class="text-secondary text-sm">Delivery in 2-3 business days</p>
+                                </div>
+                                <p class="font-bold">$15.00</p>
+                            </div>
+                        </label>
+
+                        <label class="border border-secondary rounded-lg p-lg cursor-pointer">
+                            <input type="radio" name="shipping" value="overnight">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="font-bold">Overnight Shipping</p>
+                                    <p class="text-secondary text-sm">Delivery next business day</p>
+                                </div>
+                                <p class="font-bold">$49.99</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Payment Method -->
+            <div class="card">
+                <div class="card-header flex items-center gap-md">
+                    <div style="width: 40px; height: 40px; background-color: var(--secondary-color); color: var(--text-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">3</div>
+                    <h2 class="font-bold text-lg">Payment Method</h2>
+                </div>
+
+                <div class="card-body">
+                    <div class="flex flex-col gap-lg">
+                        <!-- Credit Card Tab -->
+                        <div class="border-bottom pb-lg">
+                            <h3 class="font-bold mb-lg">Credit Card</h3>
+
+                            <form id="paymentForm" class="flex flex-col gap-lg">
+                                <div class="form-group">
+                                    <label class="form-label">Cardholder Name</label>
+                                    <input type="text" class="form-input" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Card Number</label>
+                                    <input type="text" class="form-input" placeholder="1234 5678 9012 3456" maxlength="19" required>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-lg">
+                                    <div class="form-group">
+                                        <label class="form-label">Expiry Date</label>
+                                        <input type="text" class="form-input" placeholder="MM/YY" maxlength="5" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">CVV</label>
+                                        <input type="text" class="form-input" placeholder="123" maxlength="3" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group flex gap-md items-center">
+                                    <input type="checkbox" id="saveCard" checked>
+                                    <label for="saveCard" class="form-label m-0">Save this card for future purchases</label>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Other Payment Options -->
+                        <div>
+                            <p class="font-bold mb-md">Other Payment Options</p>
+                            <div class="flex flex-col gap-md">
+                                <button class="btn btn-outline btn-block text-left flex items-center gap-md">
+                                    <span>🏦</span>
+                                    <span>Bank Transfer</span>
+                                </button>
+                                <button class="btn btn-outline btn-block text-left flex items-center gap-md">
+                                    <span>📱</span>
+                                    <span>Digital Wallet (Apple Pay, Google Pay)</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary Sidebar -->
+        <div>
+            <div class="card h-fit sticky" style="top: 100px;">
+                <div class="card-header border-bottom">
+                    <h2 class="font-bold text-lg">Order Summary</h2>
+                </div>
+
+                <div class="card-body">
+                    <!-- Items List -->
+                    <div id="checkoutItems" class="mb-lg pb-lg border-bottom flex flex-col gap-md max-h-60 overflow-y-auto">
+                        <!-- Items loaded from cart -->
+                    </div>
+
+                    <!-- Price Breakdown -->
+                    <div class="flex flex-col gap-md mb-lg pb-lg border-bottom">
+                        <div class="flex justify-between text-secondary">
+                            <span>Subtotal</span>
+                            <span id="subtotal">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-secondary">
+                            <span>Shipping</span>
+                            <span id="shipping">Free</span>
+                        </div>
+                        <div class="flex justify-between text-secondary">
+                            <span>Tax</span>
+                            <span id="tax">$0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="flex justify-between mb-lg pb-lg border-bottom text-lg font-bold">
+                        <span>Total</span>
+                        <span id="total" class="text-primary">$0.00</span>
+                    </div>
+
+                    <!-- Promo Code -->
+                    <div class="form-group mb-lg">
+                        <label class="form-label">Promo Code</label>
+                        <div class="flex gap-sm">
+                            <input type="text" class="form-input flex-1" id="promoCode" placeholder="Enter code">
+                            <button class="btn btn-secondary" onclick="applyPromo()">Apply</button>
+                        </div>
+                    </div>
+
+                    <!-- Place Order Button -->
+                    <button class="btn btn-primary btn-block btn-lg font-semibold mb-md" onclick="placeOrder()">
+                        Place Order
+                    </button>
+
+                    <p class="text-secondary text-center text-sm">
+                        ✓ Secure checkout with SSL encryption
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    // Check authentication
+    if (!authService.isLoggedIn()) {
+        window.location.href = '/login';
+    }
+
+    async function loadCheckoutData() {
+        try {
+            const cart = await CartAPI.getCart();
+            renderCheckoutItems(cart.items || []);
+            updateTotals(cart);
+        } catch (error) {
+            Log.error('Failed to load checkout data', error);
+            app.showNotification('Failed to load checkout data', 'error');
+        }
+    }
+
+    function renderCheckoutItems(items) {
+        const container = DOM.get('#checkoutItems');
+
+        if (items.length === 0) {
+            window.location.href = '/cart';
+            return;
+        }
+
+        container.innerHTML = items.map(item => `
+                <div class="text-sm">
+                    <div class="flex justify-between mb-sm">
+                        <span>${item.product.name}</span>
+                        <span class="font-semibold">${String.formatCurrency(item.subtotal)}</span>
+                    </div>
+                    <p class="text-secondary text-xs">Qty: ${item.quantity}</p>
+                </div>
+            `).join('');
+    }
+
+    function updateTotals(cart) {
+        DOM.text(DOM.get('#subtotal'), String.formatCurrency(cart.subtotal || 0));
+        DOM.text(DOM.get('#shipping'), cart.shipping > 0 ? String.formatCurrency(cart.shipping) : 'Free');
+        DOM.text(DOM.get('#tax'), String.formatCurrency(cart.tax || 0));
+        DOM.text(DOM.get('#total'), String.formatCurrency(cart.total || 0));
+    }
+
+    function applyPromo() {
+        const code = DOM.get('#promoCode').value;
+        if (code) {
+            app.showNotification('Promo code applied ✓', 'success');
+        }
+    }
+
+    async function placeOrder() {
+        if (!DOM.get('#shippingForm').checkValidity() || !DOM.get('#paymentForm').checkValidity()) {
+            app.showNotification('Please fill in all required fields', 'error');
+            return;
+        }
+
+        try {
+            const order = await OrderAPI.createOrder({
+                shippingAddress: getFormData('#shippingForm'),
+                paymentMethod: document.querySelector('input[name="shipping"]:checked').value,
+                shippingMethod: document.querySelector('input[name="shipping"]:checked').value
+            });
+
+            app.showNotification('Order placed successfully! ✓', 'success');
+            setTimeout(() => {
+                window.location.href = `/orders/${order.id}`;
+            }, 2000);
+        } catch (error) {
+            Log.error('Failed to place order', error);
+            app.showNotification('Failed to place order', 'error');
+        }
+    }
+
+    function getFormData(formSelector) {
+        const form = DOM.get(formSelector);
+        const formData = new FormData(form);
+        const data = {};
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+        return data;
+    }
+
+    // Initial load
+    document.addEventListener('app:init', loadCheckoutData);
+</script>
+</body>
+</html>

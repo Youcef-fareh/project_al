@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="User Registration - Oudkeniss">
+    <title>Create Account - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body style="background-color: var(--bg-secondary);">
+<div class="flex items-center justify-center" style="min-height: 100vh; padding: var(--spacing-lg);">
+    <div class="container-sm">
+        <div class="card">
+            <div class="card-body p-2xl">
+                <h1 class="text-3xl font-bold text-center mb-lg">Create Account</h1>
+                <p class="text-center text-secondary mb-2xl">Join Oudkeniss and start buying or selling</p>
+
+                <form id="registerForm" class="flex flex-col gap-lg">
+                    <!-- Full Name -->
+                    <div class="form-group">
+                        <label class="form-label required" for="name">Full Name</label>
+                        <input type="text"
+                               id="name"
+                               class="form-input"
+                               placeholder="John Doe"
+                               required>
+                        <span class="form-error hidden" id="nameError"></span>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-group">
+                        <label class="form-label required" for="email">Email Address</label>
+                        <input type="email"
+                               id="email"
+                               class="form-input"
+                               placeholder="your@email.com"
+                               required>
+                        <span class="form-error hidden" id="emailError"></span>
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="form-group">
+                        <label class="form-label required" for="phone">Phone Number</label>
+                        <input type="tel"
+                               id="phone"
+                               class="form-input"
+                               placeholder="+1 (555) 123-4567"
+                               required>
+                        <span class="form-error hidden" id="phoneError"></span>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group">
+                        <label class="form-label required" for="password">Password</label>
+                        <input type="password"
+                               id="password"
+                               class="form-input"
+                               placeholder="••••••••"
+                               required>
+                        <span class="form-help">Minimum 8 characters with letters and numbers</span>
+                        <span class="form-error hidden" id="passwordError"></span>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="form-group">
+                        <label class="form-label required" for="confirmPassword">Confirm Password</label>
+                        <input type="password"
+                               id="confirmPassword"
+                               class="form-input"
+                               placeholder="••••••••"
+                               required>
+                        <span class="form-error hidden" id="confirmPasswordError"></span>
+                    </div>
+
+                    <!-- User Type Selection -->
+                    <div class="form-group">
+                        <label class="form-label required">I want to:</label>
+                        <div class="flex gap-lg">
+                            <label class="radio">
+                                <input type="radio" name="userType" value="buyer" checked required>
+                                Buy Products
+                            </label>
+                            <label class="radio">
+                                <input type="radio" name="userType" value="seller" required>
+                                Sell Products
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Terms & Conditions -->
+                    <div class="checkbox">
+                        <input type="checkbox" id="terms" required>
+                        <label for="terms">
+                            I agree to the <a href="/terms" class="text-primary">Terms of Service</a> and <a href="/privacy" class="text-primary">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary btn-lg btn-block font-semibold">
+                        Create Account
+                    </button>
+
+                    <!-- Sign In Link -->
+                    <p class="text-center text-sm text-secondary">
+                        Already have an account?
+                        <a href="/login" class="text-primary font-semibold hover:underline">Sign In</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script>
+    const form = DOM.get('#registerForm');
+
+    // Form submission
+    DOM.on(form, 'submit', async (e) => {
+        e.preventDefault();
+
+        const name = form.name.value.trim();
+        const email = form.email.value.trim();
+        const phone = form.phone.value.trim();
+        const password = form.password.value;
+        const confirmPassword = form.confirmPassword.value;
+        const userType = form.querySelector('input[name="userType"]:checked').value;
+
+        // Clear previous errors
+        document.querySelectorAll('.form-error').forEach(el => DOM.addClass(el, 'hidden'));
+
+        // Validate
+        let isValid = true;
+
+        if (!name) {
+            showError('nameError', 'Full name is required');
+            isValid = false;
+        }
+
+        if (!Validation.isEmail(email)) {
+            showError('emailError', 'Please enter a valid email address');
+            isValid = false;
+        }
+
+        if (!Validation.isPhone(phone)) {
+            showError('phoneError', 'Please enter a valid phone number');
+            isValid = false;
+        }
+
+        if (password.length < 8) {
+            showError('passwordError', 'Password must be at least 8 characters');
+            isValid = false;
+        }
+
+        if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+            showError('passwordError', 'Password must contain letters and numbers');
+            isValid = false;
+        }
+
+        if (password !== confirmPassword) {
+            showError('confirmPasswordError', 'Passwords do not match');
+            isValid = false;
+        }
+
+        if (!isValid) return;
+
+        // Submit registration
+        try {
+            await authService.register(email, password, name);
+            // Redirect to home or profile setup
+            window.location.href = '/profile/setup';
+        } catch (error) {
+            alert('Registration failed: ' + (error.message || 'Please try again'));
+        }
+    });
+
+    function showError(fieldId, message) {
+        const errorEl = DOM.get(`#${fieldId}`);
+        DOM.text(errorEl, message);
+        DOM.removeClass(errorEl, 'hidden');
+    }
+</script>
+</body>
+</html>

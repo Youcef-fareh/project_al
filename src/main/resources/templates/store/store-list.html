@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Stores - Oudkeniss">
+    <title>Stores - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/header :: header"></header>
+
+<main class="container py-lg">
+    <h1 class="text-4xl font-bold mb-2xl">Stores</h1>
+
+    <!-- Search & Filter -->
+    <div class="card mb-2xl p-lg">
+        <div class="flex flex-col flex-md-row gap-lg items-center">
+            <input type="search"
+                   class="form-input flex-1"
+                   placeholder="Search stores..."
+                   id="storeSearch">
+            <select class="form-select" id="ratingFilter" style="width: auto;">
+                <option value="">All Ratings</option>
+                <option value="5">⭐⭐⭐⭐⭐ 5 Stars</option>
+                <option value="4">⭐⭐⭐⭐ 4+ Stars</option>
+                <option value="3">⭐⭐⭐ 3+ Stars</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Stores Grid -->
+    <div id="storesGrid" class="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-3 gap-lg">
+        <!-- Loading -->
+        <div class="col-span-3 flex justify-center py-2xl">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-center mt-2xl">
+        <nav id="pagination" class="pagination"></nav>
+    </div>
+</main>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 9;
+
+    async function loadStores() {
+        try {
+            const response = await StoreAPI.getAllStores(currentPage, ITEMS_PER_PAGE);
+            renderStores(response.items || []);
+            renderPagination(response.totalPages || 1);
+        } catch (error) {
+            Log.error('Failed to load stores', error);
+            app.showNotification('Failed to load stores', 'error');
+        }
+    }
+
+    function renderStores(stores) {
+        const grid = DOM.get('#storesGrid');
+
+        if (stores.length === 0) {
+            grid.innerHTML = '<div class="col-span-3 text-center py-2xl"><p class="text-secondary">No stores found</p></div>';
+            return;
+        }
+
+        grid.innerHTML = stores.map(store => `
+                <a href="/stores/${store.id}" class="card hover:shadow-lg transition-all overflow-hidden">
+                    <div style="width: 100%; height: 150px; background-color: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 3em;">
+                        🏪
+                    </div>
+                    <div class="card-body">
+                        <h3 class="font-bold text-lg mb-sm">${store.name}</h3>
+                        <p class="text-secondary text-sm mb-md line-clamp-2">${store.description}</p>
+
+                        <div class="flex items-center gap-sm mb-md">
+                            <span class="text-sm">⭐ ${store.rating || 0}</span>
+                            <span class="text-sm text-secondary">(${store.followers || 0} followers)</span>
+                        </div>
+
+                        <button class="btn btn-primary btn-block" onclick="event.preventDefault(); followStore(${store.id})">
+                            Follow Store
+                        </button>
+                    </div>
+                </a>
+            `).join('');
+    }
+
+    function renderPagination(totalPages) {
+        const pagination = DOM.get('#pagination');
+        let html = '';
+
+        if (currentPage > 1) {
+            html += `<button onclick="goToPage(${currentPage - 1})" class="btn btn-secondary">← Previous</button>`;
+        }
+
+        for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+            html += `<button class="${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        }
+
+        if (currentPage < totalPages) {
+            html += `<button onclick="goToPage(${currentPage + 1})" class="btn btn-secondary">Next →</button>`;
+        }
+
+        pagination.innerHTML = html;
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        loadStores();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function followStore(storeId) {
+        if (!authService.isLoggedIn()) {
+            window.location.href = '/login';
+            return;
+        }
+        app.showNotification('Store followed ✓', 'success');
+    }
+
+    // Event listeners
+    const debouncedSearch = Async.debounce(() => {
+        currentPage = 1;
+        loadStores();
+    }, 300);
+
+    DOM.on(DOM.get('#storeSearch'), 'input', debouncedSearch);
+    DOM.on(DOM.get('#ratingFilter'), 'change', () => {
+        currentPage = 1;
+        loadStores();
+    });
+
+    // Initial load
+    loadStores();
+</script>
+</body>
+</html>

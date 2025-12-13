@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="User Profile - Oudkeniss">
+    <title>My Profile - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/header :: header"></header>
+
+<main class="container py-lg">
+    <div class="flex items-center justify-between mb-2xl">
+        <h1 class="text-4xl font-bold">My Profile</h1>
+        <a href="/profile/edit" class="btn btn-primary">Edit Profile</a>
+    </div>
+
+    <div class="grid grid-cols-1 grid-cols-lg-3 gap-lg">
+        <!-- Profile Sidebar -->
+        <div class="grid grid-cols-1 gap-lg">
+            <!-- Profile Card -->
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="w-24 h-24 rounded-full bg-primary mx-auto mb-lg flex items-center justify-center text-white text-3xl">
+                        👤
+                    </div>
+                    <h2 th:text="${user.name}" class="text-xl font-bold mb-sm">User Name</h2>
+                    <p th:text="${user.email}" class="text-secondary text-sm mb-lg">user@email.com</p>
+                    <span class="badge badge-success" th:text="${user.role}">Buyer</span>
+                </div>
+            </div>
+
+            <!-- Stats Card -->
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="font-bold mb-lg">Account Stats</h3>
+                    <div class="flex flex-col gap-md">
+                        <div class="flex justify-between">
+                            <span class="text-secondary">Total Orders</span>
+                            <span class="font-bold" th:text="${stats.totalOrders}">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-secondary">Total Spent</span>
+                            <span class="font-bold" th:text="${stats.totalSpent}">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-secondary">Member Since</span>
+                            <span class="font-bold" th:text="${#temporals.format(user.createdAt, 'MMM yyyy')}">Jan 2025</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="font-bold mb-lg">Quick Links</h3>
+                    <div class="flex flex-col gap-md">
+                        <a href="/orders" class="text-primary hover:underline">📦 My Orders</a>
+                        <a href="/wishlist" class="text-primary hover:underline">❤️ Wishlist</a>
+                        <a href="/settings" class="text-primary hover:underline">⚙️ Settings</a>
+                        <a href="/addresses" class="text-primary hover:underline">📍 Addresses</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Details -->
+        <div class="grid grid-cols-1 gap-lg col-span-2">
+            <!-- Personal Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="font-bold">Personal Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-1 grid-cols-md-2 gap-lg">
+                        <div>
+                            <p class="text-secondary text-sm">First Name</p>
+                            <p class="font-semibold" th:text="${user.firstName}">John</p>
+                        </div>
+                        <div>
+                            <p class="text-secondary text-sm">Last Name</p>
+                            <p class="font-semibold" th:text="${user.lastName}">Doe</p>
+                        </div>
+                        <div>
+                            <p class="text-secondary text-sm">Email</p>
+                            <p class="font-semibold" th:text="${user.email}">john@example.com</p>
+                        </div>
+                        <div>
+                            <p class="text-secondary text-sm">Phone</p>
+                            <p class="font-semibold" th:text="${user.phone}">+1 (555) 123-4567</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="card">
+                <div class="card-header flex justify-between items-center">
+                    <h3 class="font-bold">Recent Orders</h3>
+                    <a href="/orders" class="text-primary text-sm">View All →</a>
+                </div>
+                <div class="card-body">
+                    <div id="recentOrders" class="flex flex-col gap-md">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Addresses -->
+            <div class="card">
+                <div class="card-header flex justify-between items-center">
+                    <h3 class="font-bold">Saved Addresses</h3>
+                    <a href="/addresses" class="text-primary text-sm">View All →</a>
+                </div>
+                <div class="card-body">
+                    <div id="addresses" class="flex flex-col gap-md">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    async function loadRecentOrders() {
+        try {
+            const response = await OrderAPI.getUserOrders(1);
+            const orders = (response.items || []).slice(0, 3);
+
+            const container = DOM.get('#recentOrders');
+            if (orders.length === 0) {
+                container.innerHTML = '<p class="text-secondary">No orders yet</p>';
+                return;
+            }
+
+            container.innerHTML = orders.map(order => `
+                    <div class="border-bottom pb-md">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="font-semibold">Order #${order.id}</p>
+                                <p class="text-sm text-secondary">${new Date(order.createdAt).toLocaleDateString()}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold">${String.formatCurrency(order.total)}</p>
+                                <span class="badge badge-${order.status === 'completed' ? 'success' : 'info'}">${order.status}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+        } catch (error) {
+            Log.error('Failed to load recent orders', error);
+        }
+    }
+
+    // Load data on page load
+    document.addEventListener('app:init', loadRecentOrders);
+</script>
+</body>
+</html>

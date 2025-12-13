@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="My Orders - Oudkeniss">
+    <title>My Orders - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/header :: header"></header>
+
+<main class="container py-lg">
+    <div class="flex justify-between items-center mb-2xl">
+        <h1 class="text-4xl font-bold">My Orders</h1>
+        <a href="/products" class="btn btn-primary">Continue Shopping</a>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex gap-md mb-lg border-bottom">
+        <button class="pb-md px-lg border-bottom-2 font-semibold text-primary" onclick="filterOrders('all')">
+            All Orders
+        </button>
+        <button class="pb-md px-lg border-bottom-2 font-semibold text-secondary" onclick="filterOrders('pending')">
+            Pending
+        </button>
+        <button class="pb-md px-lg border-bottom-2 font-semibold text-secondary" onclick="filterOrders('shipped')">
+            Shipped
+        </button>
+        <button class="pb-md px-lg border-bottom-2 font-semibold text-secondary" onclick="filterOrders('delivered')">
+            Delivered
+        </button>
+    </div>
+
+    <!-- Orders List -->
+    <div id="ordersList" class="flex flex-col gap-lg">
+        <!-- Loading -->
+        <div class="flex justify-center py-2xl">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-center mt-2xl">
+        <nav id="pagination" class="pagination"></nav>
+    </div>
+</main>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    let currentPage = 1;
+    let currentFilter = 'all';
+    const ITEMS_PER_PAGE = 10;
+
+    async function loadOrders() {
+        try {
+            const response = await OrderAPI.getUserOrders(currentPage);
+            let orders = response.items || [];
+
+            if (currentFilter !== 'all') {
+                orders = orders.filter(o => o.status === currentFilter);
+            }
+
+            renderOrders(orders);
+            renderPagination(response.totalPages || 1);
+        } catch (error) {
+            Log.error('Failed to load orders', error);
+            app.showNotification('Failed to load orders', 'error');
+        }
+    }
+
+    function renderOrders(orders) {
+        const container = DOM.get('#ordersList');
+
+        if (orders.length === 0) {
+            container.innerHTML = `
+                    <div class="card p-2xl text-center">
+                        <p class="text-lg text-secondary mb-lg">No orders found</p>
+                        <a href="/products" class="btn btn-primary">Start Shopping</a>
+                    </div>
+                `;
+            return;
+        }
+
+        container.innerHTML = orders.map(order => `
+                <div class="card">
+                    <div class="card-header flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-lg">Order #${order.id}</h3>
+                            <p class="text-secondary text-sm">${new Date(order.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-lg">${String.formatCurrency(order.total)}</p>
+                            <span class="badge badge-${getStatusColor(order.status)}">${order.status}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="grid grid-cols-1 grid-cols-md-3 gap-lg mb-lg">
+                            <div>
+                                <p class="text-secondary text-sm">Items</p>
+                                <p class="font-semibold">${order.items?.length || 0} items</p>
+                            </div>
+                            <div>
+                                <p class="text-secondary text-sm">Shipping</p>
+                                <p class="font-semibold">${order.shippingAddress?.city || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p class="text-secondary text-sm">Est. Delivery</p>
+                                <p class="font-semibold">${order.estimatedDelivery ? new Date(order.estimatedDelivery).toLocaleDateString() : 'N/A'}</p>
+                            </div>
+                        </div>
+
+                        <a href="/orders/${order.id}" class="btn btn-primary">View Order Details</a>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    function getStatusColor(status) {
+        const colors = {
+            'pending': 'warning',
+            'processing': 'info',
+            'shipped': 'info',
+            'delivered': 'success',
+            'cancelled': 'error'
+        };
+        return colors[status] || 'info';
+    }
+
+    function renderPagination(totalPages) {
+        const pagination = DOM.get('#pagination');
+        let html = '';
+
+        if (currentPage > 1) {
+            html += `<button onclick="goToPage(${currentPage - 1})" class="btn btn-secondary">← Previous</button>`;
+        }
+
+        for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+            html += `<button class="${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        }
+
+        if (currentPage < totalPages) {
+            html += `<button onclick="goToPage(${currentPage + 1})" class="btn btn-secondary">Next →</button>`;
+        }
+
+        pagination.innerHTML = html;
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        loadOrders();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function filterOrders(status) {
+        currentFilter = status;
+        currentPage = 1;
+        loadOrders();
+    }
+
+    // Initial load
+    loadOrders();
+</script>
+</body>
+</html>

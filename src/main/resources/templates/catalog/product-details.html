@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Product Details - Oudkeniss">
+    <title>Product Details - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/header :: header"></header>
+
+<main class="container py-lg">
+    <!-- Breadcrumb -->
+    <nav class="flex gap-sm text-sm text-secondary mb-lg">
+        <a href="/" class="hover:text-primary">Home</a>
+        <span>/</span>
+        <a href="/products" class="hover:text-primary">Products</a>
+        <span>/</span>
+        <span class="text-primary" th:text="${product.category}">Category</span>
+    </nav>
+
+    <div class="grid grid-cols-1 grid-cols-lg-2 gap-2xl">
+        <!-- Product Images -->
+        <div>
+            <!-- Main Image -->
+            <div style="width: 100%; height: 400px; background-color: var(--bg-tertiary); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 5em; margin-bottom: var(--spacing-lg);">
+                📦
+            </div>
+
+            <!-- Thumbnail Images -->
+            <div class="grid grid-cols-4 gap-md">
+                <div style="width: 100%; aspect-ratio: 1; background-color: var(--bg-tertiary); border-radius: 8px; cursor: pointer; border: 2px solid var(--primary-color);"></div>
+                <div style="width: 100%; aspect-ratio: 1; background-color: var(--bg-tertiary); border-radius: 8px; cursor: pointer; border: 2px solid var(--border-color);"></div>
+                <div style="width: 100%; aspect-ratio: 1; background-color: var(--bg-tertiary); border-radius: 8px; cursor: pointer; border: 2px solid var(--border-color);"></div>
+                <div style="width: 100%; aspect-ratio: 1; background-color: var(--bg-tertiary); border-radius: 8px; cursor: pointer; border: 2px solid var(--border-color);"></div>
+            </div>
+        </div>
+
+        <!-- Product Information -->
+        <div>
+            <!-- Title & Rating -->
+            <h1 class="text-3xl font-bold mb-md" th:text="${product.name}">Product Name</h1>
+
+            <div class="flex items-center gap-lg mb-lg">
+                <div class="flex items-center gap-sm">
+                    <span class="text-xl">⭐</span>
+                    <span class="font-semibold" th:text="${product.rating}">4.5</span>
+                    <span class="text-secondary">(<span th:text="${product.reviews}">125</span> reviews)</span>
+                </div>
+                <span class="text-secondary">|</span>
+                <span class="text-secondary">
+                        <span th:text="${product.stock}">10</span> in stock
+                    </span>
+            </div>
+
+            <!-- Category & Brand -->
+            <div class="flex gap-lg mb-lg pb-lg border-bottom">
+                <div>
+                    <p class="text-secondary text-sm">Category</p>
+                    <p class="font-semibold" th:text="${product.category}">Electronics</p>
+                </div>
+                <div>
+                    <p class="text-secondary text-sm">Brand</p>
+                    <p class="font-semibold" th:text="${product.brand}">Brand Name</p>
+                </div>
+            </div>
+
+            <!-- Price & Discount -->
+            <div class="mb-lg">
+                <div class="flex items-center gap-md">
+                    <p class="text-4xl font-bold text-primary" th:text="${product.price}">$199.99</p>
+                    <p th:if="${product.originalPrice}" class="text-lg line-through text-secondary" th:text="${product.originalPrice}">$299.99</p>
+                    <span th:if="${product.discount}" class="badge badge-error" th:text="${product.discount}">-30%</span>
+                </div>
+                <p class="text-secondary mt-md">Price includes shipping</p>
+            </div>
+
+            <!-- Quantity Selector -->
+            <div class="mb-lg">
+                <p class="font-semibold mb-md">Quantity</p>
+                <div class="flex gap-sm items-center w-fit">
+                    <button class="btn btn-secondary" onclick="decrementQty()">−</button>
+                    <input type="number" id="quantity" value="1" min="1" class="form-input" style="width: 80px; text-align: center;" th:attr="max=${product.stock}">
+                    <button class="btn btn-secondary" onclick="incrementQty()">+</button>
+                </div>
+            </div>
+
+            <!-- Add to Cart Button -->
+            <button class="btn btn-primary btn-lg btn-block font-semibold mb-md" onclick="addToCart()">
+                🛒 Add to Cart
+            </button>
+
+            <!-- Wishlist & Share -->
+            <div class="grid grid-cols-2 gap-md mb-2xl">
+                <button class="btn btn-outline btn-block">❤️ Add to Wishlist</button>
+                <button class="btn btn-outline btn-block">📤 Share</button>
+            </div>
+
+            <!-- Seller Information -->
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="font-bold mb-lg">Seller Information</h3>
+                    <div class="flex gap-lg items-center mb-lg">
+                        <div style="width: 60px; height: 60px; background-color: var(--bg-tertiary); border-radius: 50%;"></div>
+                        <div>
+                            <p class="font-semibold" th:text="${product.seller.name}">Store Name</p>
+                            <p class="text-secondary text-sm">⭐ <span th:text="${product.seller.rating}">4.8</span> rating</p>
+                            <p class="text-secondary text-sm"><span th:text="${product.seller.followers}">5.2k</span> followers</p>
+                        </div>
+                    </div>
+                    <a href="#" class="btn btn-outline btn-block mb-md">Visit Store</a>
+                    <a href="#" class="btn btn-secondary btn-block">Contact Seller</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Details Section -->
+    <div class="mt-2xl">
+        <!-- Tabs -->
+        <div class="flex gap-lg border-bottom mb-lg">
+            <button class="pb-md px-lg border-bottom-2 font-semibold text-primary" onclick="showTab('description')">
+                Description
+            </button>
+            <button class="pb-md px-lg border-bottom-2 font-semibold text-secondary" onclick="showTab('specifications')">
+                Specifications
+            </button>
+            <button class="pb-md px-lg border-bottom-2 font-semibold text-secondary" onclick="showTab('reviews')">
+                Reviews
+            </button>
+        </div>
+
+        <!-- Description Tab -->
+        <div id="description" class="tab-content">
+            <div class="grid grid-cols-1 grid-cols-lg-2 gap-2xl">
+                <div>
+                    <h2 class="text-2xl font-bold mb-lg">Product Description</h2>
+                    <p class="text-secondary mb-md" th:text="${product.description}">
+                        This is a detailed product description. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    </p>
+                    <h3 class="font-bold mb-md mt-lg">Key Features:</h3>
+                    <ul class="flex flex-col gap-md">
+                        <li th:each="feature : ${product.features}">✓ <span th:text="${feature}">Feature</span></li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="font-bold mb-lg">Product Highlights</h3>
+                        <table style="width: 100%;">
+                            <tr class="border-bottom">
+                                <td class="py-md text-secondary">SKU</td>
+                                <td class="py-md font-semibold" th:text="${product.sku}">SKU123</td>
+                            </tr>
+                            <tr class="border-bottom">
+                                <td class="py-md text-secondary">Weight</td>
+                                <td class="py-md font-semibold" th:text="${product.weight}">500g</td>
+                            </tr>
+                            <tr class="border-bottom">
+                                <td class="py-md text-secondary">Dimensions</td>
+                                <td class="py-md font-semibold" th:text="${product.dimensions}">10x10x10cm</td>
+                            </tr>
+                            <tr>
+                                <td class="py-md text-secondary">Warranty</td>
+                                <td class="py-md font-semibold" th:text="${product.warranty}">1 Year</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Specifications Tab -->
+        <div id="specifications" class="tab-content hidden">
+            <div class="card">
+                <div class="card-body">
+                    <table style="width: 100%;">
+                        <tr th:each="spec : ${product.specifications}" class="border-bottom">
+                            <td class="py-md font-semibold w-1/3" th:text="${spec.name}">Spec Name</td>
+                            <td class="py-md text-secondary" th:text="${spec.value}">Spec Value</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reviews Tab -->
+        <div id="reviews" class="tab-content hidden">
+            <div class="grid grid-cols-1 grid-cols-lg-3 gap-lg">
+                <!-- Review Summary -->
+                <div class="card">
+                    <div class="card-body text-center">
+                        <p class="text-5xl font-bold text-primary mb-md" th:text="${product.rating}">4.5</p>
+                        <div class="flex justify-center mb-md">⭐⭐⭐⭐</div>
+                        <p class="text-secondary text-sm">Based on <span th:text="${product.reviews}">125</span> reviews</p>
+                    </div>
+                </div>
+
+                <!-- Rating Distribution -->
+                <div class="col-span-2">
+                    <h3 class="font-bold mb-lg">Rating Breakdown</h3>
+                    <div class="flex flex-col gap-md">
+                        <div class="flex gap-md items-center">
+                            <span class="w-12">5 ⭐</span>
+                            <div style="flex: 1; height: 8px; background-color: var(--bg-tertiary); border-radius: 4px;">
+                                <div style="height: 100%; width: 70%; background-color: var(--success); border-radius: 4px;"></div>
+                            </div>
+                            <span class="w-12 text-right text-sm">70%</span>
+                        </div>
+                        <div class="flex gap-md items-center">
+                            <span class="w-12">4 ⭐</span>
+                            <div style="flex: 1; height: 8px; background-color: var(--bg-tertiary); border-radius: 4px;">
+                                <div style="height: 100%; width: 20%; background-color: var(--info); border-radius: 4px;"></div>
+                            </div>
+                            <span class="w-12 text-right text-sm">20%</span>
+                        </div>
+                        <div class="flex gap-md items-center">
+                            <span class="w-12">3 ⭐</span>
+                            <div style="flex: 1; height: 8px; background-color: var(--bg-tertiary); border-radius: 4px;">
+                                <div style="height: 100%; width: 7%; background-color: var(--warning); border-radius: 4px;"></div>
+                            </div>
+                            <span class="w-12 text-right text-sm">7%</span>
+                        </div>
+                        <div class="flex gap-md items-center">
+                            <span class="w-12">2 ⭐</span>
+                            <div style="flex: 1; height: 8px; background-color: var(--bg-tertiary); border-radius: 4px;">
+                                <div style="height: 100%; width: 2%; background-color: var(--error); border-radius: 4px;"></div>
+                            </div>
+                            <span class="w-12 text-right text-sm">2%</span>
+                        </div>
+                        <div class="flex gap-md items-center">
+                            <span class="w-12">1 ⭐</span>
+                            <div style="flex: 1; height: 8px; background-color: var(--bg-tertiary); border-radius: 4px;">
+                                <div style="height: 100%; width: 1%; background-color: var(--error); border-radius: 4px;"></div>
+                            </div>
+                            <span class="w-12 text-right text-sm">1%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Reviews -->
+            <div class="mt-2xl">
+                <h3 class="font-bold mb-lg">Customer Reviews</h3>
+                <div class="flex flex-col gap-lg" id="reviewsList">
+                    <!-- Reviews populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    <div class="mt-2xl">
+        <h2 class="text-3xl font-bold mb-lg">Related Products</h2>
+        <div class="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-4 gap-lg">
+            <!-- Related products will be loaded here -->
+            <div class="card">
+                <div style="width: 100%; height: 150px; background-color: var(--bg-tertiary);"></div>
+                <div class="card-body">
+                    <h3 class="font-semibold mb-sm">Related Product</h3>
+                    <p class="text-primary font-bold">$99.99</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    const productId = new URLSearchParams(window.location.search).get('id') || window.location.pathname.split('/').pop();
+
+    function showTab(tabName) {
+        DOM.getAll('.tab-content').forEach(tab => DOM.addClass(tab, 'hidden'));
+        DOM.removeClass(DOM.get(`#${tabName}`), 'hidden');
+
+        DOM.getAll('button').forEach(btn => {
+            if (btn.textContent.toLowerCase().includes(tabName.toLowerCase())) {
+                DOM.addClass(btn, 'text-primary');
+                DOM.removeClass(btn, 'text-secondary');
+            } else {
+                DOM.removeClass(btn, 'text-primary');
+                DOM.addClass(btn, 'text-secondary');
+            }
+        });
+    }
+
+    function incrementQty() {
+        const qty = DOM.get('#quantity');
+        qty.value = parseInt(qty.value) + 1;
+    }
+
+    function decrementQty() {
+        const qty = DOM.get('#quantity');
+        if (parseInt(qty.value) > 1) {
+            qty.value = parseInt(qty.value) - 1;
+        }
+    }
+
+    async function addToCart() {
+        if (!authService.isLoggedIn()) {
+            window.location.href = '/login';
+            return;
+        }
+
+        try {
+            const quantity = parseInt(DOM.get('#quantity').value);
+            await CartAPI.addToCart(productId, quantity);
+            app.showNotification('Added to cart ✓', 'success');
+            DOM.get('#quantity').value = 1;
+        } catch (error) {
+            app.showNotification('Failed to add to cart', 'error');
+        }
+    }
+</script>
+</body>
+</html>
