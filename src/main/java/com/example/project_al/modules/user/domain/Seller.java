@@ -1,6 +1,6 @@
 package com.example.project_al.modules.user.domain;
 
-import com.example.project_al.modules.store.domain.Store;
+import com.example.project_al.modules.stores.domain.Store;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;

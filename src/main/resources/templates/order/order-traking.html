@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Tracking - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/navbar :: navbar"></header>
+
+<main class="container py-lg">
+    <h1 class="text-4xl font-bold mb-lg">Track Your Order</h1>
+
+    <div class="grid grid-cols-1 grid-cols-lg-3 gap-lg">
+        <!-- Tracking Info -->
+        <div class="col-span-2">
+            <div class="card mb-lg">
+                <div class="card-header border-bottom">
+                    <h2 class="font-bold text-lg">Shipment Details</h2>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-1 grid-cols-md-2 gap-lg mb-lg pb-lg border-bottom">
+                        <div>
+                            <p class="text-secondary text-sm">Order Number</p>
+                            <p class="font-bold text-lg" th:text="${order.id}">#123456</p>
+                        </div>
+                        <div>
+                            <p class="text-secondary text-sm">Tracking Number</p>
+                            <p class="font-bold text-lg" th:text="${order.trackingNumber}">TRK123456789</p>
+                        </div>
+                        <div>
+                            <p class="text-secondary text-sm">Carrier</p>
+                            <p class="font-bold" th:text="${order.carrier}">FedEx</p>
+                        </div>
+                        <div>
+                            <p class="text-secondary text-sm">Est. Delivery</p>
+                            <p class="font-bold" th:text="${#dates.format(order.estimatedDelivery, 'MMM dd, yyyy')}">Dec 20, 2024</p>
+                        </div>
+                    </div>
+
+                    <a th:href="${order.carrierUrl}" target="_blank" class="btn btn-primary mb-lg">
+                        Track on Carrier Website
+                    </a>
+                </div>
+            </div>
+
+            <!-- Status Timeline -->
+            <div class="card">
+                <div class="card-header border-bottom">
+                    <h2 class="font-bold text-lg">Delivery Timeline</h2>
+                </div>
+                <div class="card-body">
+                    <div id="timeline" class="flex flex-col gap-lg"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delivery Summary -->
+        <div>
+            <div class="card h-fit">
+                <div class="card-body">
+                    <h2 class="font-bold text-lg mb-lg">Delivery Summary</h2>
+
+                    <div class="mb-lg pb-lg border-bottom">
+                        <p class="text-secondary text-sm">Status</p>
+                        <p class="font-bold text-lg" th:text="${order.status}">In Transit</p>
+                    </div>
+
+                    <div class="mb-lg pb-lg border-bottom">
+                        <p class="text-secondary text-sm">Current Location</p>
+                        <p class="font-bold" th:text="${order.currentLocation}">Distribution Center, NY</p>
+                    </div>
+
+                    <div class="mb-lg pb-lg border-bottom">
+                        <p class="text-secondary text-sm">Delivery Address</p>
+                        <p class="text-sm" th:text="${order.deliveryAddress}">123 Main St, City, State 12345</p>
+                    </div>
+
+                    <div>
+                        <p class="text-secondary text-sm">Last Update</p>
+                        <p class="font-bold" th:text="${#dates.format(order.lastUpdate, 'MMM dd, HH:mm')}">Dec 17, 14:30</p>
+                    </div>
+
+                    <button class="btn btn-outline btn-block mt-lg" onclick="contactSupport()">Contact Carrier</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/components.js}"></script>
+<script th:src="@{/js/handlers.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    const trackingNumber = new URLSearchParams(window.location.search).get('tracking');
+
+    async function loadTrackingInfo() {
+        try {
+            const events = await DataManager.loadList(`/api/tracking/${trackingNumber}`);
+            renderTimeline(events.items);
+        } catch (error) {
+            app.showNotification('Failed to load tracking info', 'error');
+        }
+    }
+
+    function renderTimeline(events) {
+        const timeline = DOM.get('#timeline');
+        timeline.innerHTML = events.map((event, idx) => `
+                <div class="flex gap-md pb-md ${idx !== events.length - 1 ? 'border-bottom' : ''}">
+                    <div class="text-primary font-bold text-2xl" style="width: 40px; text-align: center;">
+                        ${event.status === 'completed' ? '✓' : '→'}
+                    </div>
+                    <div>
+                        <p class="font-semibold">${event.statusText}</p>
+                        <p class="text-secondary text-sm">${event.location}</p>
+                        <p class="text-secondary text-xs mt-sm">${new Date(event.timestamp).toLocaleString()}</p>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    function contactSupport() {
+        app.showNotification('Support contact opened', 'success');
+    }
+
+    document.addEventListener('app:init', loadTrackingInfo);
+</script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users Management - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/navbar :: navbar"></header>
+
+<div class="page-container">
+    <aside th:replace="layout/sidebar :: sidebar"></aside>
+
+    <main class="main-content container py-lg">
+        <div class="flex justify-between items-center mb-lg">
+            <h1 class="text-4xl font-bold">Users Management</h1>
+            <a href="/admin/users/new" class="btn btn-primary">Add User</a>
+        </div>
+
+        <div class="card">
+            <div class="card-header border-bottom">
+                <div class="grid grid-cols-1 grid-cols-md-3 gap-lg">
+                    <div class="form-group">
+                        <input type="text" id="searchUsers" class="form-input" placeholder="Search users..." onkeyup="searchUsers()">
+                    </div>
+                    <div class="form-group">
+                        <select id="roleFilter" class="form-select" onchange="filterUsers()">
+                            <option value="">All Roles</option>
+                            <option value="customer">Customer</option>
+                            <option value="seller">Seller</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select id="statusFilter" class="form-select" onchange="filterUsers()">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="banned">Banned</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="usersList">
+                        <tr>
+                            <td colspan="7" class="text-center py-lg">
+                                <div class="spinner"></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex justify-center mt-lg">
+                    <nav id="pagination" class="pagination"></nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div id="bulkActions" class="hidden mt-lg p-lg bg-gray-1 rounded flex justify-between items-center">
+            <span id="selectedCount">0 selected</span>
+            <div class="flex gap-md">
+                <button class="btn btn-sm btn-warning" onclick="bulkDeactivate()">Deactivate</button>
+                <button class="btn btn-sm btn-danger" onclick="bulkDelete()">Delete</button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/components.js}"></script>
+<script th:src="@{/js/handlers.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 20;
+
+    async function loadUsers() {
+        try {
+            const params = {
+                role: DOM.get('#roleFilter').value,
+                status: DOM.get('#statusFilter').value,
+                search: DOM.get('#searchUsers').value,
+                page: currentPage,
+                limit: ITEMS_PER_PAGE
+            };
+
+            const response = await APIService.request(`/api/admin/users?${new URLSearchParams(params)}`, 'GET');
+            renderUserTable(response.items);
+            Handlers.pagination('#pagination', currentPage, response.totalPages, goToPage);
+        } catch (error) {
+            app.showNotification('Failed to load users', 'error');
+        }
+    }
+
+    function renderUserTable(users) {
+        const tbody = DOM.get('#usersList');
+        tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td><input type="checkbox" class="user-checkbox" value="${user.id}"></td>
+                    <td>${user.firstName} ${user.lastName}</td>
+                    <td>${user.email}</td>
+                    <td><span class="badge badge-primary">${user.role}</span></td>
+                    <td>
+                        <span class="badge ${user.status === 'active' ? 'badge-success' : 'badge-warning'}">
+                            ${user.status}
+                        </span>
+                    </td>
+                    <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                    <td class="flex gap-sm">
+                        <a href="/admin/users/${user.id}" class="btn btn-sm btn-outline">Edit</a>
+                        <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+    }
+
+    function searchUsers() {
+        currentPage = 1;
+        loadUsers();
+    }
+
+    function filterUsers() {
+        currentPage = 1;
+        loadUsers();
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        loadUsers();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleSelectAll() {
+        const checkboxes = document.querySelectorAll('.user-checkbox');
+        const selectAll = DOM.get('#selectAll');
+        checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        updateBulkActions();
+    }
+
+    function updateBulkActions() {
+        const selected = document.querySelectorAll('.user-checkbox:checked').length;
+        const bulkActions = DOM.get('#bulkActions');
+        if (selected > 0) {
+            bulkActions.classList.remove('hidden');
+            DOM.text(DOM.get('#selectedCount'), `${selected} selected`);
+        } else {
+            bulkActions.classList.add('hidden');
+        }
+    }
+
+    function deleteUser(userId) {
+        if (confirm('Are you sure?')) {
+            DataManager.deleteItem(`/api/admin/users/${userId}`).then(() => loadUsers());
+        }
+    }
+
+    function bulkDeactivate() {
+        // Implementation
+    }
+
+    function bulkDelete() {
+        if (confirm('Delete selected users?')) {
+            // Implementation
+        }
+    }
+
+    document.addEventListener('app:init', loadUsers);
+    document.addEventListener('change', updateBulkActions);
+</script>
+</body>
+</html>

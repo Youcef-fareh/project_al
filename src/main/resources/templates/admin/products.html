@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products Management - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/navbar :: navbar"></header>
+
+<div class="page-container">
+    <aside th:replace="layout/sidebar :: sidebar"></aside>
+
+    <main class="main-content container py-lg">
+        <div class="flex justify-between items-center mb-lg">
+            <h1 class="text-4xl font-bold">Products Management</h1>
+            <a href="/admin/products/new" class="btn btn-primary">Add Product</a>
+        </div>
+
+        <div class="card">
+            <div class="card-header border-bottom">
+                <div class="grid grid-cols-1 grid-cols-md-3 gap-lg">
+                    <div class="form-group">
+                        <input type="text" id="searchProducts" class="form-input" placeholder="Search products..." onkeyup="searchProducts()">
+                    </div>
+                    <div class="form-group">
+                        <select id="categoryFilter" class="form-select" onchange="filterProducts()">
+                            <option value="">All Categories</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="fashion">Fashion</option>
+                            <option value="home">Home & Garden</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select id="statusFilter" class="form-select" onchange="filterProducts()">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Rating</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="productsList">
+                        <tr>
+                            <td colspan="7" class="text-center py-lg">
+                                <div class="spinner"></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex justify-center mt-lg">
+                    <nav id="pagination" class="pagination"></nav>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/components.js}"></script>
+<script th:src="@{/js/handlers.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 20;
+
+    async function loadProducts() {
+        try {
+            const params = {
+                category: DOM.get('#categoryFilter').value,
+                status: DOM.get('#statusFilter').value,
+                search: DOM.get('#searchProducts').value,
+                page: currentPage,
+                limit: ITEMS_PER_PAGE
+            };
+
+            const response = await APIService.request(`/api/admin/products?${new URLSearchParams(params)}`, 'GET');
+            renderProductTable(response.items);
+            Handlers.pagination('#pagination', currentPage, response.totalPages, goToPage);
+        } catch (error) {
+            app.showNotification('Failed to load products', 'error');
+        }
+    }
+
+    function renderProductTable(products) {
+        const tbody = DOM.get('#productsList');
+        tbody.innerHTML = products.map(product => `
+                <tr>
+                    <td>
+                        <div class="flex gap-md items-center">
+                            <div style="width: 50px; height: 50px; background-color: var(--color-bg-1); border-radius: 4px;"></div>
+                            <div>
+                                <p class="font-semibold">${product.name}</p>
+                                <p class="text-secondary text-sm">Store: ${product.storeName}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${product.category}</td>
+                    <td class="font-bold">${String.formatCurrency(product.price)}</td>
+                    <td>
+                        <span class="${product.stock > 10 ? 'badge-success' : 'badge-warning'}">${product.stock} units</span>
+                    </td>
+                    <td>
+                        <span class="flex gap-sm">
+                            <span class="text-yellow-500">★</span>
+                            ${product.rating}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge ${product.status === 'active' ? 'badge-success' : 'badge-warning'}">
+                            ${product.status}
+                        </span>
+                    </td>
+                    <td class="flex gap-sm">
+                        <a href="/admin/products/${product.id}" class="btn btn-sm btn-outline">Edit</a>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProduct(${product.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+    }
+
+    function searchProducts() {
+        currentPage = 1;
+        loadProducts();
+    }
+
+    function filterProducts() {
+        currentPage = 1;
+        loadProducts();
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        loadProducts();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function deleteProduct(productId) {
+        if (confirm('Are you sure?')) {
+            DataManager.deleteItem(`/api/admin/products/${productId}`).then(() => loadProducts());
+        }
+    }
+
+    document.addEventListener('app:init', loadProducts);
+</script>
+</body>
+</html>

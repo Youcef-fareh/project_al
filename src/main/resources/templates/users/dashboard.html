@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/navbar :: navbar"></header>
+
+<div class="page-container">
+    <aside th:replace="layout/sidebar :: sidebar"></aside>
+
+    <main class="main-content container py-lg">
+        <h1 class="text-4xl font-bold mb-lg">Welcome, <span th:text="${user.name}">User</span>!</h1>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-4 gap-lg mb-2xl">
+            <div class="card">
+                <div class="card-body text-center">
+                    <p class="text-3xl font-bold text-primary mb-sm" th:text="${stats.totalOrders}">12</p>
+                    <p class="text-secondary">Total Orders</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body text-center">
+                    <p class="text-3xl font-bold text-primary mb-sm" th:text="${stats.totalSpent}">$1,250</p>
+                    <p class="text-secondary">Total Spent</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body text-center">
+                    <p class="text-3xl font-bold text-primary mb-sm" th:text="${stats.wishlistCount}">8</p>
+                    <p class="text-secondary">Wishlist Items</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body text-center">
+                    <p class="text-3xl font-bold text-primary mb-sm" th:text="${stats.rewardsPoints}">450</p>
+                    <p class="text-secondary">Reward Points</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 grid-cols-lg-2 gap-lg">
+            <!-- Recent Orders -->
+            <div>
+                <h2 class="text-2xl font-bold mb-lg">Recent Orders</h2>
+                <div id="recentOrders" class="flex flex-col gap-md">
+                    <div class="spinner"></div>
+                </div>
+                <a href="/user/orders" class="btn btn-primary btn-block mt-lg">View All Orders</a>
+            </div>
+
+            <!-- Quick Actions -->
+            <div>
+                <h2 class="text-2xl font-bold mb-lg">Quick Links</h2>
+                <div class="flex flex-col gap-md">
+                    <a href="/user/profile" class="card p-lg hover:shadow-md transition-all">
+                        <p class="font-bold">👤 Update Profile</p>
+                        <p class="text-secondary text-sm">Manage your personal information</p>
+                    </a>
+                    <a href="/user/wishlist" class="card p-lg hover:shadow-md transition-all">
+                        <p class="font-bold">❤️ My Wishlist</p>
+                        <p class="text-secondary text-sm">View saved items</p>
+                    </a>
+                    <a href="/user/settings" class="card p-lg hover:shadow-md transition-all">
+                        <p class="font-bold">⚙️ Account Settings</p>
+                        <p class="text-secondary text-sm">Update preferences</p>
+                    </a>
+                    <a href="/user/addresses" class="card p-lg hover:shadow-md transition-all">
+                        <p class="font-bold">📍 Addresses</p>
+                        <p class="text-secondary text-sm">Manage addresses</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/components.js}"></script>
+<script th:src="@{/js/handlers.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    async function loadRecentOrders() {
+        try {
+            const orders = await DataManager.loadList('/api/orders', { limit: 5 });
+            renderList(DOM.get('#recentOrders'), orders.items, Components.orderItem);
+        } catch (error) {
+            Log.error('Failed to load orders', error);
+        }
+    }
+
+    document.addEventListener('app:init', loadRecentOrders);
+</script>
+</body>
+</html>

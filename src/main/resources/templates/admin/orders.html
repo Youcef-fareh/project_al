@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders Management - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/navbar :: navbar"></header>
+
+<div class="page-container">
+    <aside th:replace="layout/sidebar :: sidebar"></aside>
+
+    <main class="main-content container py-lg">
+        <h1 class="text-4xl font-bold mb-lg">Orders Management</h1>
+
+        <div class="card">
+            <div class="card-header border-bottom">
+                <div class="grid grid-cols-1 grid-cols-md-4 gap-lg">
+                    <div class="form-group">
+                        <input type="text" id="searchOrders" class="form-input" placeholder="Search by order ID..." onkeyup="searchOrders()">
+                    </div>
+                    <div class="form-group">
+                        <select id="statusFilter" class="form-select" onchange="filterOrders()">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="date" id="dateFrom" class="form-input" onchange="filterOrders()">
+                    </div>
+                    <div class="form-group">
+                        <input type="date" id="dateTo" class="form-input" onchange="filterOrders()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Payment</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="ordersList">
+                        <tr>
+                            <td colspan="7" class="text-center py-lg">
+                                <div class="spinner"></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex justify-center mt-lg">
+                    <nav id="pagination" class="pagination"></nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div id="bulkActions" class="hidden mt-lg p-lg bg-gray-1 rounded flex justify-between items-center">
+            <span id="selectedCount">0 selected</span>
+            <div class="flex gap-md">
+                <button class="btn btn-sm btn-outline" onclick="bulkExport()">Export</button>
+                <button class="btn btn-sm btn-primary" onclick="bulkUpdateStatus()">Update Status</button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/components.js}"></script>
+<script th:src="@{/js/handlers.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 20;
+
+    async function loadOrders() {
+        try {
+            const params = {
+                status: DOM.get('#statusFilter').value,
+                search: DOM.get('#searchOrders').value,
+                dateFrom: DOM.get('#dateFrom').value,
+                dateTo: DOM.get('#dateTo').value,
+                page: currentPage,
+                limit: ITEMS_PER_PAGE
+            };
+
+            const response = await APIService.request(`/api/admin/orders?${new URLSearchParams(params)}`, 'GET');
+            renderOrderTable(response.items);
+            Handlers.pagination('#pagination', currentPage, response.totalPages, goToPage);
+        } catch (error) {
+            app.showNotification('Failed to load orders', 'error');
+        }
+    }
+
+    function renderOrderTable(orders) {
+        const tbody = DOM.get('#ordersList');
+        tbody.innerHTML = orders.map(order => `
+                <tr>
+                    <td class="font-bold">#${order.id}</td>
+                    <td>${order.customerName}</td>
+                    <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td class="font-bold">${String.formatCurrency(order.total)}</td>
+                    <td>
+                        <span class="badge badge-${getStatusColor(order.status)}">
+                            ${order.status}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge ${order.paymentStatus === 'paid' ? 'badge-success' : 'badge-warning'}">
+                            ${order.paymentStatus}
+                        </span>
+                    </td>
+                    <td class="flex gap-sm">
+                        <a href="/admin/orders/${order.id}" class="btn btn-sm btn-outline">View</a>
+                        <button class="btn btn-sm btn-primary" onclick="editOrder(${order.id})">Edit</button>
+                    </td>
+                </tr>
+            `).join('');
+    }
+
+    function getStatusColor(status) {
+        const colors = {
+            'pending': 'warning',
+            'processing': 'info',
+            'shipped': 'primary',
+            'delivered': 'success',
+            'cancelled': 'danger'
+        };
+        return colors[status] || 'secondary';
+    }
+
+    function searchOrders() {
+        currentPage = 1;
+        loadOrders();
+    }
+
+    function filterOrders() {
+        currentPage = 1;
+        loadOrders();
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        loadOrders();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function editOrder(orderId) {
+        window.location.href = `/admin/orders/${orderId}/edit`;
+    }
+
+    function bulkExport() {
+        app.showNotification('Exporting orders...', 'info');
+    }
+
+    function bulkUpdateStatus() {
+        app.showNotification('Update status dialog opened', 'info');
+    }
+
+    document.addEventListener('app:init', loadOrders);
+</script>
+</body>
+</html>

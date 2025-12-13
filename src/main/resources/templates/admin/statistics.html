@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics & Statistics - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/navbar :: navbar"></header>
+
+<div class="page-container">
+    <aside th:replace="layout/sidebar :: sidebar"></aside>
+
+    <main class="main-content container py-lg">
+        <div class="flex justify-between items-center mb-lg">
+            <h1 class="text-4xl font-bold">Analytics & Statistics</h1>
+            <div class="flex gap-md">
+                <input type="date" id="dateFrom" class="form-input" onchange="updateStats()">
+                <input type="date" id="dateTo" class="form-input" onchange="updateStats()">
+                <button class="btn btn-outline" onclick="exportData()">Export</button>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-4 gap-lg mb-2xl">
+            <div class="card">
+                <div class="card-body">
+                    <p class="text-secondary text-sm">Total Revenue</p>
+                    <p class="text-3xl font-bold text-primary" id="totalRevenue">$0</p>
+                    <p class="text-green-600 text-sm mt-sm">↑ 24% vs period</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <p class="text-secondary text-sm">Total Orders</p>
+                    <p class="text-3xl font-bold text-primary" id="totalOrders">0</p>
+                    <p class="text-green-600 text-sm mt-sm">↑ 18% vs period</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <p class="text-secondary text-sm">New Users</p>
+                    <p class="text-3xl font-bold text-primary" id="newUsers">0</p>
+                    <p class="text-green-600 text-sm mt-sm">↑ 15% vs period</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <p class="text-secondary text-sm">Avg Order Value</p>
+                    <p class="text-3xl font-bold text-primary" id="avgOrderValue">$0</p>
+                    <p class="text-secondary text-sm mt-sm">Last period</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="grid grid-cols-1 grid-cols-lg-2 gap-lg mb-lg">
+            <!-- Revenue Chart -->
+            <div class="card">
+                <div class="card-header border-bottom">
+                    <h2 class="font-bold text-lg">Revenue Trend</h2>
+                </div>
+                <div class="card-body">
+                    <div id="revenueChart" style="height: 300px; background: linear-gradient(135deg, rgba(45, 166, 178, 0.1), rgba(45, 166, 178, 0.05)); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <p class="text-secondary">Chart placeholder - 7 days revenue data</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Chart -->
+            <div class="card">
+                <div class="card-header border-bottom">
+                    <h2 class="font-bold text-lg">Orders Trend</h2>
+                </div>
+                <div class="card-body">
+                    <div id="ordersChart" style="height: 300px; background: linear-gradient(135deg, rgba(45, 166, 178, 0.1), rgba(45, 166, 178, 0.05)); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <p class="text-secondary">Chart placeholder - 7 days orders data</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="grid grid-cols-1 grid-cols-lg-2 gap-lg mb-lg">
+            <!-- Category Performance -->
+            <div class="card">
+                <div class="card-header border-bottom">
+                    <h2 class="font-bold text-lg">Top Categories</h2>
+                </div>
+                <div class="card-body">
+                    <div id="topCategories" class="flex flex-col gap-lg">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Products -->
+            <div class="card">
+                <div class="card-header border-bottom">
+                    <h2 class="font-bold text-lg">Top Products</h2>
+                </div>
+                <div class="card-body">
+                    <div id="topProducts" class="flex flex-col gap-lg">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tables -->
+        <div class="grid grid-cols-1 gap-lg">
+            <!-- Sales by Store -->
+            <div class="card">
+                <div class="card-header border-bottom">
+                    <h2 class="font-bold text-lg">Sales by Store</h2>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Store</th>
+                            <th>Orders</th>
+                            <th>Revenue</th>
+                            <th>Avg Order Value</th>
+                            <th>Growth</th>
+                        </tr>
+                        </thead>
+                        <tbody id="storeStats">
+                        <tr>
+                            <td colspan="5" class="text-center py-lg">
+                                <div class="spinner"></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/components.js}"></script>
+<script th:src="@{/js/handlers.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    async function loadStatistics() {
+        try {
+            const params = {
+                dateFrom: DOM.get('#dateFrom').value || null,
+                dateTo: DOM.get('#dateTo').value || null
+            };
+
+            const stats = await DataManager.loadItem('/api/admin/statistics', params);
+
+            // Update KPIs
+            DOM.text(DOM.get('#totalRevenue'), String.formatCurrency(stats.totalRevenue));
+            DOM.text(DOM.get('#totalOrders'), stats.totalOrders);
+            DOM.text(DOM.get('#newUsers'), stats.newUsers);
+            DOM.text(DOM.get('#avgOrderValue'), String.formatCurrency(stats.avgOrderValue));
+
+            // Load category and product data
+            const categories = stats.topCategories || [];
+            const products = stats.topProducts || [];
+            const stores = stats.storeStats || [];
+
+            renderCategoryStats(categories);
+            renderProductStats(products);
+            renderStoreStats(stores);
+        } catch (error) {
+            app.showNotification('Failed to load statistics', 'error');
+        }
+    }
+
+    function renderCategoryStats(categories) {
+        const container = DOM.get('#topCategories');
+        container.innerHTML = categories.map(cat => `
+                <div class="flex justify-between items-center pb-md border-bottom">
+                    <div>
+                        <p class="font-semibold">${cat.name}</p>
+                        <p class="text-secondary text-sm">${cat.productCount} products</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold">${String.formatCurrency(cat.revenue)}</p>
+                        <p class="text-secondary text-sm">${cat.orders} orders</p>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    function renderProductStats(products) {
+        const container = DOM.get('#topProducts');
+        container.innerHTML = products.map(prod => `
+                <div class="flex justify-between items-center pb-md border-bottom">
+                    <div>
+                        <p class="font-semibold">${prod.name}</p>
+                        <p class="text-secondary text-sm">${prod.storeName}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold">${prod.units} units sold</p>
+                        <p class="text-secondary text-sm">${String.formatCurrency(prod.revenue)}</p>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    function renderStoreStats(stores) {
+        const tbody = DOM.get('#storeStats');
+        tbody.innerHTML = stores.map(store => `
+                <tr>
+                    <td><strong>${store.name}</strong></td>
+                    <td>${store.orders}</td>
+                    <td class="font-bold">${String.formatCurrency(store.revenue)}</td>
+                    <td>${String.formatCurrency(store.avgOrderValue)}</td>
+                    <td><span class="text-green-600">↑ ${store.growth}%</span></td>
+                </tr>
+            `).join('');
+    }
+
+    function updateStats() {
+        loadStatistics();
+    }
+
+    function exportData() {
+        app.showNotification('Exporting analytics data...', 'info');
+    }
+
+    document.addEventListener('app:init', loadStatistics);
+</script>
+</body>
+</html>

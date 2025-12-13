@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Dashboard - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/navbar :: navbar"></header>
+
+<div class="page-container">
+    <aside th:replace="layout/sidebar :: sidebar"></aside>
+
+    <main class="main-content container py-lg">
+        <h1 class="text-4xl font-bold mb-lg">Store Dashboard</h1>
+
+        <!-- KPIs -->
+        <div class="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-4 gap-lg mb-2xl">
+            <div class="card">
+                <div class="card-body">
+                    <p class="text-secondary text-sm">Total Sales</p>
+                    <p class="text-3xl font-bold text-primary mb-sm" th:text="${stats.totalSales}">$25,430</p>
+                    <p class="text-green-600 text-sm">↑ 12% from last month</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <p class="text-secondary text-sm">Total Orders</p>
+                    <p class="text-3xl font-bold text-primary mb-sm" th:text="${stats.totalOrders}">156</p>
+                    <p class="text-green-600 text-sm">↑ 8% from last month</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <p class="text-secondary text-sm">Products</p>
+                    <p class="text-3xl font-bold text-primary mb-sm" th:text="${stats.totalProducts}">42</p>
+                    <p class="text-secondary text-sm">Active listings</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <p class="text-secondary text-sm">Rating</p>
+                    <p class="text-3xl font-bold text-primary mb-sm" th:text="${stats.rating}">4.8/5</p>
+                    <p class="text-secondary text-sm" th:text="${stats.ratingCount} + ' reviews'">1,240 reviews</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 grid-cols-lg-2 gap-lg">
+            <!-- Recent Orders -->
+            <div>
+                <div class="card">
+                    <div class="card-header border-bottom">
+                        <h2 class="font-bold text-lg">Recent Orders</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="recentOrders" class="flex flex-col gap-md">
+                            <div class="spinner"></div>
+                        </div>
+                        <a href="/store/orders" class="btn btn-outline btn-block mt-lg">View All Orders</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Products -->
+            <div>
+                <div class="card">
+                    <div class="card-header border-bottom">
+                        <h2 class="font-bold text-lg">Top Products</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="topProducts" class="flex flex-col gap-md">
+                            <div class="spinner"></div>
+                        </div>
+                        <a href="/store/products" class="btn btn-outline btn-block mt-lg">View All Products</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mt-lg">
+            <h2 class="text-2xl font-bold mb-lg">Quick Actions</h2>
+            <div class="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-4 gap-lg">
+                <a href="/store/products/new" class="card p-lg hover:shadow-md transition-all text-center">
+                    <p class="text-3xl mb-md">➕</p>
+                    <p class="font-bold">Add Product</p>
+                </a>
+                <a href="/store/settings" class="card p-lg hover:shadow-md transition-all text-center">
+                    <p class="text-3xl mb-md">⚙️</p>
+                    <p class="font-bold">Settings</p>
+                </a>
+                <a href="/store/analytics" class="card p-lg hover:shadow-md transition-all text-center">
+                    <p class="text-3xl mb-md">📊</p>
+                    <p class="font-bold">Analytics</p>
+                </a>
+                <a href="/store/messages" class="card p-lg hover:shadow-md transition-all text-center">
+                    <p class="text-3xl mb-md">💬</p>
+                    <p class="font-bold">Messages</p>
+                </a>
+            </div>
+        </div>
+    </main>
+</div>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/components.js}"></script>
+<script th:src="@{/js/handlers.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    async function loadDashboard() {
+        try {
+            const orders = await DataManager.loadList('/api/store/orders', { limit: 5 });
+            const products = await DataManager.loadList('/api/store/products/top', { limit: 5 });
+
+            renderList(DOM.get('#recentOrders'), orders.items, Components.orderItem);
+            renderList(DOM.get('#topProducts'), products.items, Components.productCard);
+        } catch (error) {
+            app.showNotification('Failed to load dashboard data', 'error');
+        }
+    }
+
+    document.addEventListener('app:init', loadDashboard);
+</script>
+</body>
+</html>

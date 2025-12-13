@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/navbar :: navbar"></header>
+
+<main class="container py-lg">
+    <h1 class="text-4xl font-bold mb-lg">Search Results</h1>
+
+    <div class="grid grid-cols-1 grid-cols-lg-4 gap-lg">
+        <!-- Filters Sidebar -->
+        <aside class="card h-fit">
+            <div class="card-body">
+                <h2 class="font-bold mb-lg">Filters</h2>
+
+                <!-- Category Filter -->
+                <div class="mb-lg pb-lg border-bottom">
+                    <p class="font-semibold mb-md">Category</p>
+                    <select id="categoryFilter" class="form-select w-full" onchange="updateSearch()">
+                        <option value="">All Categories</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="fashion">Fashion</option>
+                        <option value="home">Home & Garden</option>
+                        <option value="sports">Sports</option>
+                    </select>
+                </div>
+
+                <!-- Price Range -->
+                <div class="mb-lg pb-lg border-bottom">
+                    <p class="font-semibold mb-md">Price Range</p>
+                    <input type="range" id="priceRange" class="w-full" min="0" max="1000" value="1000" onchange="updateSearch()">
+                    <p class="text-secondary text-sm mt-sm">Up to $<span id="priceValue">1000</span></p>
+                </div>
+
+                <!-- Rating Filter -->
+                <div class="mb-lg pb-lg border-bottom">
+                    <p class="font-semibold mb-md">Rating</p>
+                    <label class="flex gap-md mb-sm">
+                        <input type="checkbox" value="5" onchange="updateSearch()"> 5 Stars
+                    </label>
+                    <label class="flex gap-md mb-sm">
+                        <input type="checkbox" value="4" onchange="updateSearch()"> 4+ Stars
+                    </label>
+                    <label class="flex gap-md mb-sm">
+                        <input type="checkbox" value="3" onchange="updateSearch()"> 3+ Stars
+                    </label>
+                </div>
+
+                <!-- Sort -->
+                <div>
+                    <p class="font-semibold mb-md">Sort By</p>
+                    <select id="sortFilter" class="form-select w-full" onchange="updateSearch()">
+                        <option value="relevance">Relevance</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="rating">Highest Rated</option>
+                        <option value="newest">Newest</option>
+                    </select>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Results -->
+        <div class="col-span-3">
+            <!-- Search Info -->
+            <div class="mb-lg">
+                <p class="text-secondary">
+                    Showing <strong id="resultCount">0</strong> results for "<strong th:text="${query}">query</strong>"
+                </p>
+            </div>
+
+            <!-- Results Grid -->
+            <div id="searchResults" class="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-3 gap-lg mb-lg">
+                <div class="col-span-3 flex justify-center">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="flex justify-center">
+                <nav id="pagination" class="pagination"></nav>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/components.js}"></script>
+<script th:src="@{/js/handlers.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    const query = new URLSearchParams(window.location.search).get('q') || '';
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 12;
+
+    async function performSearch() {
+        try {
+            const params = new URLSearchParams({
+                q: query,
+                category: DOM.get('#categoryFilter').value,
+                maxPrice: DOM.get('#priceRange').value,
+                sort: DOM.get('#sortFilter').value,
+                page: currentPage,
+                limit: ITEMS_PER_PAGE
+            });
+
+            const response = await APIService.request(`/api/search?${params}`, 'GET');
+
+            renderGrid(DOM.get('#searchResults'), response.items, Components.productCard, 3);
+            DOM.text(DOM.get('#resultCount'), response.total);
+            Handlers.pagination('#pagination', currentPage, response.totalPages, goToPage);
+        } catch (error) {
+            DOM.get('#searchResults').innerHTML = Components.errorState('Failed to load results');
+        }
+    }
+
+    function updateSearch() {
+        currentPage = 1;
+        performSearch();
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        performSearch();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Update price display
+    DOM.on(DOM.get('#priceRange'), 'input', (e) => {
+        DOM.text(DOM.get('#priceValue'), e.target.value);
+    });
+
+    // Initial search
+    document.addEventListener('app:init', performSearch);
+</script>
+</body>
+</html>

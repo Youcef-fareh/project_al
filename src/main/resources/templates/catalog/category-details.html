@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/navbar :: navbar"></header>
+
+<main class="container py-lg">
+    <!-- Breadcrumb -->
+    <nav class="flex gap-sm text-sm text-secondary mb-lg">
+        <a href="/" class="hover:text-primary">Home</a>
+        <span>/</span>
+        <a href="/categories" class="hover:text-primary">Categories</a>
+        <span>/</span>
+        <span class="text-primary" th:text="${category.name}">Category</span>
+    </nav>
+
+    <!-- Category Header -->
+    <div class="card mb-lg" th:style="'background: linear-gradient(135deg, ' + ${category.color1} + ', ' + ${category.color2} + ')'">
+        <div class="card-body text-white">
+            <h1 class="text-4xl font-bold mb-md" th:text="${category.name}">Category Name</h1>
+            <p th:text="${category.description}">Category description goes here</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 grid-cols-lg-4 gap-lg">
+        <!-- Filters -->
+        <aside class="card h-fit">
+            <div class="card-body">
+                <h2 class="font-bold mb-lg">Filters</h2>
+
+                <!-- Subcategories -->
+                <div class="mb-lg pb-lg border-bottom">
+                    <p class="font-semibold mb-md">Subcategories</p>
+                    <div class="flex flex-col gap-sm" id="subcategories"></div>
+                </div>
+
+                <!-- Price Range -->
+                <div class="mb-lg pb-lg border-bottom">
+                    <p class="font-semibold mb-md">Price Range</p>
+                    <input type="range" id="priceRange" class="w-full" min="0" max="1000" value="1000" onchange="filterProducts()">
+                    <p class="text-secondary text-sm mt-sm">Up to $<span id="priceValue">1000</span></p>
+                </div>
+
+                <!-- Rating -->
+                <div class="mb-lg pb-lg border-bottom">
+                    <p class="font-semibold mb-md">Rating</p>
+                    <label class="flex gap-md mb-sm">
+                        <input type="checkbox" onchange="filterProducts()"> 5 Stars
+                    </label>
+                    <label class="flex gap-md mb-sm">
+                        <input type="checkbox" onchange="filterProducts()"> 4+ Stars
+                    </label>
+                </div>
+
+                <!-- Sort -->
+                <div>
+                    <p class="font-semibold mb-md">Sort By</p>
+                    <select id="sortFilter" class="form-select w-full" onchange="filterProducts()">
+                        <option value="relevance">Relevance</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="rating">Highest Rated</option>
+                        <option value="newest">Newest</option>
+                    </select>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Products -->
+        <div class="col-span-3">
+            <!-- Product Count -->
+            <div class="mb-lg flex justify-between items-center">
+                <p class="text-secondary">
+                    Showing <strong id="productCount">0</strong> products
+                </p>
+                <button class="btn btn-sm btn-outline" id="viewToggle" onclick="toggleView()">
+                    Grid View
+                </button>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="productsList" class="grid grid-cols-1 grid-cols-md-2 grid-cols-lg-3 gap-lg mb-lg">
+                <div class="col-span-3 flex justify-center">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="flex justify-center">
+                <nav id="pagination" class="pagination"></nav>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/components.js}"></script>
+<script th:src="@{/js/handlers.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    const categoryId = window.location.pathname.split('/').pop();
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 12;
+
+    async function loadCategory() {
+        try {
+            const category = await DataManager.loadItem(`/api/categories/${categoryId}`);
+            loadSubcategories(category.subcategories || []);
+            filterProducts();
+        } catch (error) {
+            app.showNotification('Failed to load category', 'error');
+        }
+    }
+
+    function loadSubcategories(subcategories) {
+        const container = DOM.get('#subcategories');
+        container.innerHTML = subcategories.map(sub => `
+                <label class="flex gap-md">
+                    <input type="checkbox" value="${sub.id}" onchange="filterProducts()">
+                    <span>${sub.name}</span>
+                </label>
+            `).join('');
+    }
+
+    async function filterProducts() {
+        try {
+            const filters = {
+                category: categoryId,
+                maxPrice: DOM.get('#priceRange').value,
+                sort: DOM.get('#sortFilter').value,
+                page: currentPage,
+                limit: ITEMS_PER_PAGE
+            };
+
+            const response = await APIService.request(`/api/products?${new URLSearchParams(filters)}`, 'GET');
+
+            renderGrid(DOM.get('#productsList'), response.items, Components.productCard, 3);
+            DOM.text(DOM.get('#productCount'), response.total);
+            Handlers.pagination('#pagination', currentPage, response.totalPages, goToPage);
+        } catch (error) {
+            DOM.get('#productsList').innerHTML = Components.errorState('Failed to load products');
+        }
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        filterProducts();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleView() {
+        const grid = DOM.get('#productsList');
+        grid.classList.toggle('grid-cols-lg-2');
+        grid.classList.toggle('grid-cols-lg-3');
+    }
+
+    DOM.on(DOM.get('#priceRange'), 'input', (e) => {
+        DOM.text(DOM.get('#priceValue'), e.target.value);
+    });
+
+    document.addEventListener('app:init', loadCategory);
+</script>
+</body>
+</html>

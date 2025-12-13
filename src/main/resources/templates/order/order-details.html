@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/navbar :: navbar"></header>
+
+<main class="container py-lg">
+    <!-- Breadcrumb -->
+    <nav class="flex gap-sm text-sm text-secondary mb-lg">
+        <a href="/user/dashboard" class="hover:text-primary">Dashboard</a>
+        <span>/</span>
+        <a href="/user/orders" class="hover:text-primary">Orders</a>
+        <span>/</span>
+        <span class="text-primary" th:text="'Order #' + ${order.id}">Order #123</span>
+    </nav>
+
+    <div class="grid grid-cols-1 grid-cols-lg-3 gap-lg">
+        <!-- Order Info -->
+        <div class="col-span-2">
+            <!-- Order Header -->
+            <div class="card mb-lg">
+                <div class="card-header flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold" th:text="'Order #' + ${order.id}">Order #123</h1>
+                        <p class="text-secondary" th:text="${#dates.format(order.createdAt, 'MMM dd, yyyy')}">Date</p>
+                    </div>
+                    <span class="badge" th:classappend="'badge-' + ${#strings.replace(order.status, ' ', '-')}" th:text="${order.status}">Status</span>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="card mb-lg">
+                <div class="card-header border-bottom">
+                    <h2 class="font-bold text-lg">Order Items</h2>
+                </div>
+                <div class="card-body">
+                    <div class="flex flex-col gap-lg" id="orderItems">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Info -->
+            <div class="card mb-lg">
+                <div class="card-header border-bottom">
+                    <h2 class="font-bold text-lg">Shipping Address</h2>
+                </div>
+                <div class="card-body">
+                    <p class="font-semibold" th:text="${order.shippingAddress.fullName}">Name</p>
+                    <p th:text="${order.shippingAddress.street}">Street</p>
+                    <p th:text="${order.shippingAddress.city} + ', ' + ${order.shippingAddress.state} + ' ' + ${order.shippingAddress.postalCode}">City</p>
+                    <p th:text="${order.shippingAddress.country}">Country</p>
+                    <p class="mt-md text-secondary" th:text="'Phone: ' + ${order.shippingAddress.phone}">Phone</p>
+                </div>
+            </div>
+
+            <!-- Payment Info -->
+            <div class="card">
+                <div class="card-header border-bottom">
+                    <h2 class="font-bold text-lg">Payment Method</h2>
+                </div>
+                <div class="card-body">
+                    <p class="font-semibold" th:text="${order.paymentMethod.type}">Credit Card</p>
+                    <p class="text-secondary" th:text="${order.paymentMethod.details}">•••• •••• •••• 1234</p>
+                    <p class="mt-md">
+                        <span class="badge badge-success" th:if="${order.paymentStatus == 'paid'}">Paid</span>
+                        <span class="badge badge-warning" th:unless="${order.paymentStatus == 'paid'}">Pending</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div>
+            <div class="card h-fit">
+                <div class="card-body">
+                    <h2 class="font-bold text-lg mb-lg">Order Summary</h2>
+
+                    <div class="flex justify-between mb-md pb-md border-bottom">
+                        <span class="text-secondary">Subtotal</span>
+                        <span th:text="${#numbers.formatCurrency(order.subtotal)}">$100.00</span>
+                    </div>
+
+                    <div class="flex justify-between mb-md pb-md border-bottom">
+                        <span class="text-secondary">Shipping</span>
+                        <span th:text="${#numbers.formatCurrency(order.shipping)}">$10.00</span>
+                    </div>
+
+                    <div class="flex justify-between mb-lg pb-lg border-bottom">
+                        <span class="text-secondary">Tax</span>
+                        <span th:text="${#numbers.formatCurrency(order.tax)}">$5.00</span>
+                    </div>
+
+                    <div class="flex justify-between text-lg font-bold">
+                        <span>Total</span>
+                        <span th:text="${#numbers.formatCurrency(order.total)}">$115.00</span>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div class="mt-lg pt-lg border-top">
+                        <h3 class="font-bold mb-lg">Status Timeline</h3>
+                        <div class="flex flex-col gap-md" id="timeline">
+                            <div class="flex gap-md">
+                                <div class="text-primary">✓</div>
+                                <div>
+                                    <p class="font-semibold">Order Confirmed</p>
+                                    <p class="text-secondary text-sm">Dec 13, 2024</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-md">
+                                <div class="text-primary">✓</div>
+                                <div>
+                                    <p class="font-semibold">Processing</p>
+                                    <p class="text-secondary text-sm">Dec 13, 2024</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-md">
+                                <div class="text-gray-3">→</div>
+                                <div>
+                                    <p class="font-semibold">Shipped</p>
+                                    <p class="text-secondary text-sm">Pending</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-outline btn-block mt-lg" onclick="contactSupport()">Contact Support</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/components.js}"></script>
+<script th:src="@{/js/handlers.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    const orderId = window.location.pathname.split('/').pop();
+
+    async function loadOrderDetails() {
+        try {
+            const order = await DataManager.loadItem(`/api/orders/${orderId}`);
+            renderOrderItems(order.items);
+        } catch (error) {
+            app.showNotification('Failed to load order details', 'error');
+        }
+    }
+
+    function renderOrderItems(items) {
+        const container = DOM.get('#orderItems');
+        const itemsHtml = items.map(item => `
+                <div class="flex gap-md pb-md border-bottom">
+                    <div style="width: 80px; height: 80px; background-color: var(--color-bg-1); border-radius: 4px;"></div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold">${item.name}</h3>
+                        <p class="text-secondary text-sm">Qty: ${item.quantity}</p>
+                        <p class="font-bold mt-sm">${String.formatCurrency(item.price)}</p>
+                    </div>
+                </div>
+            `).join('');
+        container.innerHTML = itemsHtml || Components.emptyState('No items in this order');
+    }
+
+    function contactSupport() {
+        app.showNotification('Support ticket created', 'success');
+    }
+
+    document.addEventListener('app:init', loadOrderDetails);
+</script>
+</body>
+</html>>

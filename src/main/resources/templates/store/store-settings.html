@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Settings - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/navbar :: navbar"></header>
+
+<div class="page-container">
+    <aside th:replace="layout/sidebar :: sidebar"></aside>
+
+    <main class="main-content container py-lg">
+        <h1 class="text-4xl font-bold mb-lg">Store Settings</h1>
+
+        <div class="grid grid-cols-1 grid-cols-lg-3 gap-lg">
+            <!-- Settings Menu -->
+            <nav class="card h-fit">
+                <div class="card-body p-0">
+                    <a href="#info" class="block p-lg border-bottom hover:bg-gray-1">Store Info</a>
+                    <a href="#shipping" class="block p-lg border-bottom hover:bg-gray-1">Shipping</a>
+                    <a href="#payment" class="block p-lg border-bottom hover:bg-gray-1">Payment</a>
+                    <a href="#policies" class="block p-lg border-bottom hover:bg-gray-1">Policies</a>
+                    <a href="#analytics" class="block p-lg hover:bg-gray-1">Analytics</a>
+                </div>
+            </nav>
+
+            <!-- Settings Content -->
+            <div class="col-span-2">
+                <!-- Store Info -->
+                <div id="info" class="card mb-lg">
+                    <div class="card-header border-bottom">
+                        <h2 class="font-bold text-lg">Store Information</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="infoForm" class="flex flex-col gap-lg">
+                            <div class="form-group">
+                                <label class="form-label">Store Name</label>
+                                <input type="text" class="form-input" th:value="${store.name}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-input" rows="4" th:text="${store.description}"></textarea>
+                            </div>
+                            <div class="grid grid-cols-1 grid-cols-md-2 gap-lg">
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-input" th:value="${store.email}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Phone</label>
+                                    <input type="tel" class="form-input" th:value="${store.phone}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Website</label>
+                                <input type="url" class="form-input" th:value="${store.website}">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Shipping Settings -->
+                <div id="shipping" class="card mb-lg">
+                    <div class="card-header border-bottom">
+                        <h2 class="font-bold text-lg">Shipping Settings</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="shippingForm" class="flex flex-col gap-lg">
+                            <div class="form-group">
+                                <label class="form-label">Warehouse Address</label>
+                                <input type="text" class="form-input" placeholder="Street address" th:value="${store.warehouseAddress}">
+                            </div>
+                            <div class="grid grid-cols-1 grid-cols-md-2 gap-lg">
+                                <div class="form-group">
+                                    <label class="form-label">City</label>
+                                    <input type="text" class="form-input" th:value="${store.warehouseCity}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Postal Code</label>
+                                    <input type="text" class="form-input" th:value="${store.warehousePostal}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Default Shipping Method</label>
+                                <select class="form-select">
+                                    <option>Standard (5-7 days)</option>
+                                    <option>Express (2-3 days)</option>
+                                    <option>Overnight</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Shipping Settings</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Payment Settings -->
+                <div id="payment" class="card mb-lg">
+                    <div class="card-header border-bottom">
+                        <h2 class="font-bold text-lg">Payment Methods</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="flex flex-col gap-lg">
+                            <div class="flex justify-between items-center p-lg border rounded">
+                                <div>
+                                    <p class="font-bold">💳 Credit Card</p>
+                                    <p class="text-secondary text-sm">Visa, Mastercard, American Express</p>
+                                </div>
+                                <label class="flex gap-md">
+                                    <input type="checkbox" checked>
+                                    <span>Enabled</span>
+                                </label>
+                            </div>
+                            <div class="flex justify-between items-center p-lg border rounded">
+                                <div>
+                                    <p class="font-bold">🏦 Bank Transfer</p>
+                                    <p class="text-secondary text-sm">Direct bank deposit</p>
+                                </div>
+                                <label class="flex gap-md">
+                                    <input type="checkbox">
+                                    <span>Enabled</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Policies -->
+                <div id="policies" class="card">
+                    <div class="card-header border-bottom">
+                        <h2 class="font-bold text-lg">Store Policies</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="policiesForm" class="flex flex-col gap-lg">
+                            <div class="form-group">
+                                <label class="form-label">Return Policy</label>
+                                <textarea class="form-input" rows="4" th:text="${store.returnPolicy}"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Refund Policy</label>
+                                <textarea class="form-input" rows="4" th:text="${store.refundPolicy}"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Policies</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/components.js}"></script>
+<script th:src="@{/js/handlers.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    Handlers.submitForm('#infoForm', '/api/store/info', 'PUT', () => {
+        app.showNotification('Store info updated!', 'success');
+    });
+
+    Handlers.submitForm('#shippingForm', '/api/store/shipping', 'PUT', () => {
+        app.showNotification('Shipping settings updated!', 'success');
+    });
+
+    Handlers.submitForm('#policiesForm', '/api/store/policies', 'PUT', () => {
+        app.showNotification('Policies updated!', 'success');
+    });
+</script>
+</body>
+</html>

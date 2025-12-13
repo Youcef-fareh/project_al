@@ -1,0 +1,215 @@
+<!-- Sidebar Navigation Component -->
+<aside id="sidebar" class="sidebar" xmlns:th="http://www.thymeleaf.org">
+    <div class="sidebar-header">
+        <h2 class="sidebar-title">Menu</h2>
+        <button id="sidebarClose" class="sidebar-close" onclick="toggleSidebar()">×</button>
+    </div>
+
+    <!-- User Info (if logged in) -->
+    <div class="sidebar-user" th:if="${#authorization.expression('isAuthenticated()')}">
+        <div class="user-avatar">👤</div>
+        <div>
+            <p class="user-name" th:text="${#authentication.principal.username}">User</p>
+            <p class="user-role text-sm text-secondary">Member</p>
+        </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+        <ul class="nav-list">
+            <!-- Home Section -->
+            <li class="nav-section">
+                <span class="nav-section-title">Shop</span>
+                <a href="/" class="nav-link">🏠 Home</a>
+                <a href="/products" class="nav-link">🛍️ Products</a>
+                <a href="/categories" class="nav-link">📂 Categories</a>
+                <a href="/stores" class="nav-link">🏪 Stores</a>
+            </li>
+
+            <!-- User Section (if authenticated) -->
+            <li class="nav-section" th:if="${#authorization.expression('isAuthenticated()')}">
+                <span class="nav-section-title">Account</span>
+                <a href="/user/dashboard" class="nav-link">📊 Dashboard</a>
+                <a href="/user/orders" class="nav-link">📦 My Orders</a>
+                <a href="/user/wishlist" class="nav-link">❤️ Wishlist</a>
+                <a href="/user/profile" class="nav-link">👤 Profile</a>
+                <a href="/user/settings" class="nav-link">⚙️ Settings</a>
+            </li>
+
+            <!-- Seller Section (if seller) -->
+            <li class="nav-section" th:if="${isSeller}">
+                <span class="nav-section-title">Seller</span>
+                <a href="/store/dashboard" class="nav-link">📈 Store Dashboard</a>
+                <a href="/store/products" class="nav-link">📦 Manage Products</a>
+                <a href="/store/orders" class="nav-link">📋 Orders</a>
+                <a href="/store/settings" class="nav-link">⚙️ Store Settings</a>
+            </li>
+
+            <!-- Admin Section (if admin) -->
+            <li class="nav-section" th:if="${isAdmin}">
+                <span class="nav-section-title">Admin</span>
+                <a href="/admin/dashboard" class="nav-link">📊 Dashboard</a>
+                <a href="/admin/users" class="nav-link">👥 Users</a>
+                <a href="/admin/products" class="nav-link">📦 Products</a>
+                <a href="/admin/orders" class="nav-link">📋 Orders</a>
+                <a href="/admin/statistics" class="nav-link">📈 Statistics</a>
+            </li>
+
+            <!-- Auth Section -->
+            <li class="nav-section">
+                <span class="nav-section-title">Account</span>
+                <a href="/help" class="nav-link">❓ Help & Support</a>
+                <a href="/about" class="nav-link">ℹ️ About Us</a>
+                <th:block th:if="!${#authorization.expression('isAuthenticated()')}">
+                    <a href="/login" class="nav-link">🔑 Login</a>
+                    <a href="/register" class="nav-link">📝 Register</a>
+                </th:block>
+                <th:block th:if="${#authorization.expression('isAuthenticated()')}">
+                    <a href="/logout" class="nav-link">🚪 Logout</a>
+                </th:block>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+        <p class="text-xs text-secondary">© 2025 Oudkeniss</p>
+    </div>
+</aside>
+
+<style>
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 250px;
+        height: 100vh;
+        background: var(--color-surface);
+        border-right: 1px solid var(--color-border);
+        overflow-y: auto;
+        z-index: 999;
+        display: flex;
+        flex-direction: column;
+        transition: transform var(--duration-normal);
+    }
+
+    .sidebar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--space-lg);
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .sidebar-title {
+        margin: 0;
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-bold);
+    }
+
+    .sidebar-close {
+        display: none;
+        background: none;
+        border: none;
+        font-size: 1.5em;
+        cursor: pointer;
+    }
+
+    .sidebar-user {
+        display: flex;
+        gap: var(--space-md);
+        padding: var(--space-lg);
+        border-bottom: 1px solid var(--color-border);
+        align-items: center;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        background: var(--color-bg-1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5em;
+        flex-shrink: 0;
+    }
+
+    .user-name {
+        margin: 0;
+        font-weight: var(--font-weight-semibold);
+    }
+
+    .sidebar-nav {
+        flex: 1;
+        overflow-y: auto;
+        padding: var(--space-lg) 0;
+    }
+
+    .nav-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .nav-section {
+        padding: var(--space-lg) 0;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .nav-section:last-child {
+        border-bottom: none;
+    }
+
+    .nav-section-title {
+        display: block;
+        padding: 0 var(--space-lg);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-bold);
+        text-transform: uppercase;
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-md);
+    }
+
+    .nav-link {
+        display: block;
+        padding: var(--space-md) var(--space-lg);
+        color: var(--color-text);
+        text-decoration: none;
+        transition: all var(--duration-fast);
+    }
+
+    .nav-link:hover {
+        background: var(--color-bg-1);
+        color: var(--color-primary);
+        padding-left: var(--space-xl);
+    }
+
+    .nav-link.active {
+        background: var(--color-bg-1);
+        color: var(--color-primary);
+        font-weight: var(--font-weight-semibold);
+    }
+
+    .sidebar-footer {
+        padding: var(--space-lg);
+        border-top: 1px solid var(--color-border);
+        text-align: center;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+        .sidebar {
+            transform: translateX(-100%);
+            width: 100%;
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        .sidebar-close {
+            display: block;
+        }
+    }
+</style>

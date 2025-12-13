@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings - Oudkeniss</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/typography.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<header th:replace="layout/navbar :: navbar"></header>
+
+<div class="page-container">
+    <aside th:replace="layout/sidebar :: sidebar"></aside>
+
+    <main class="main-content container py-lg">
+        <h1 class="text-4xl font-bold mb-lg">Account Settings</h1>
+
+        <div class="grid grid-cols-1 grid-cols-lg-3 gap-lg">
+            <!-- Settings Menu -->
+            <nav class="card h-fit">
+                <div class="card-body p-0">
+                    <a href="#profile" class="block p-lg border-bottom hover:bg-gray-1">Profile</a>
+                    <a href="#security" class="block p-lg border-bottom hover:bg-gray-1">Security</a>
+                    <a href="#notifications" class="block p-lg border-bottom hover:bg-gray-1">Notifications</a>
+                    <a href="#privacy" class="block p-lg border-bottom hover:bg-gray-1">Privacy</a>
+                    <a href="#preferences" class="block p-lg hover:bg-gray-1">Preferences</a>
+                </div>
+            </nav>
+
+            <!-- Settings Content -->
+            <div class="col-span-2">
+                <!-- Profile Settings -->
+                <div id="profile" class="card mb-lg">
+                    <div class="card-header border-bottom">
+                        <h2 class="font-bold text-lg">Profile Settings</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="profileForm" class="flex flex-col gap-lg">
+                            <div class="grid grid-cols-1 grid-cols-md-2 gap-lg">
+                                <div class="form-group">
+                                    <label class="form-label">First Name</label>
+                                    <input type="text" class="form-input" th:value="${user.firstName}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Last Name</label>
+                                    <input type="text" class="form-input" th:value="${user.lastName}" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" th:value="${user.email}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" class="form-input" th:value="${user.phone}">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Security Settings -->
+                <div id="security" class="card mb-lg">
+                    <div class="card-header border-bottom">
+                        <h2 class="font-bold text-lg">Security</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="securityForm" class="flex flex-col gap-lg">
+                            <div class="form-group">
+                                <label class="form-label">Current Password</label>
+                                <input type="password" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">New Password</label>
+                                <input type="password" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Confirm Password</label>
+                                <input type="password" class="form-input" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Password</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Notification Settings -->
+                <div id="notifications" class="card mb-lg">
+                    <div class="card-header border-bottom">
+                        <h2 class="font-bold text-lg">Notifications</h2>
+                    </div>
+                    <div class="card-body flex flex-col gap-lg">
+                        <label class="flex gap-md items-center">
+                            <input type="checkbox" checked>
+                            <span>Order updates</span>
+                        </label>
+                        <label class="flex gap-md items-center">
+                            <input type="checkbox" checked>
+                            <span>Promotional emails</span>
+                        </label>
+                        <label class="flex gap-md items-center">
+                            <input type="checkbox" checked>
+                            <span>New product alerts</span>
+                        </label>
+                        <label class="flex gap-md items-center">
+                            <input type="checkbox">
+                            <span>Newsletter</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="card border-error">
+                    <div class="card-header border-bottom bg-error-light">
+                        <h2 class="font-bold text-lg text-error">Danger Zone</h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-secondary mb-lg">Once you delete your account, there is no going back.</p>
+                        <button class="btn btn-danger" onclick="if(confirm('Are you sure?')) { deleteAccount(); }">Delete Account</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<footer th:replace="layout/footer :: footer"></footer>
+
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/components.js}"></script>
+<script th:src="@{/js/handlers.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    // Setup form handlers
+    Handlers.submitForm('#profileForm', '/api/user/profile', 'PUT', () => {
+        app.showNotification('Profile updated successfully!', 'success');
+    });
+
+    Handlers.submitForm('#securityForm', '/api/user/password', 'POST', () => {
+        app.showNotification('Password changed successfully!', 'success');
+        DOM.get('#securityForm').reset();
+    });
+
+    function deleteAccount() {
+        DataManager.deleteItem('/api/user/account').then(() => {
+            setTimeout(() => { window.location.href = '/'; }, 2000);
+        });
+    }
+</script>
+</body>
+</html>>
