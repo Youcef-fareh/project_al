@@ -2,9 +2,6 @@ package com.example.project_al.modules.user.domain;
 
 import com.example.project_al.modules.catalog.domain.Product;
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -12,11 +9,6 @@ import java.util.Set;
 
 @Entity
 @Table(name = "buyers")
-@Getter
-@Setter
-@SuperBuilder
-@NoArgsConstructor
-@AllArgsConstructor
 public class Buyer extends User {
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -35,12 +27,38 @@ public class Buyer extends User {
     )
     private Set<User> followingList = new HashSet<>();
 
+    // Constructors
+    public Buyer() {
+    }
+
+    public Buyer(Integer userListId, String nom, String email, String phoneNumber,
+                 String sharestring, String password) {
+        super(userListId, nom, email, phoneNumber, sharestring, password);
+    }
+
+    // Getters and Setters
+    public List<Product> getWishList() {
+        return wishList;
+    }
+
+    public void setWishList(List<Product> wishList) {
+        this.wishList = wishList;
+    }
+
+    public Set<User> getFollowingList() {
+        return followingList;
+    }
+
+    public void setFollowingList(Set<User> followingList) {
+        this.followingList = followingList;
+    }
+
     @Override
     public String getUserType() {
         return "BUYER";
     }
 
-    // Follow<User> from UML
+    // Business methods from UML
     public void follow(User user) {
         if (user instanceof Seller) {
             followingList.add(user);
@@ -51,13 +69,13 @@ public class Buyer extends User {
         followingList.remove(user);
     }
 
-    // operation1 from UML
-    public String operation1(String param1) {
-        return "Buyer operation1: " + param1;
+    public void addToWishlist(Product product) {
+        if (!wishList.contains(product)) {
+            wishList.add(product);
+        }
     }
 
-    // operation3 from UML
-    public void operation3() {
-        System.out.println("Buyer operation3 executed");
+    public void removeFromWishlist(Product product) {
+        wishList.remove(product);
     }
 }

@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -39,6 +38,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Long countByStatus(OrderStatus status);
 
-    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.status = 'DELIVERED'")
-    BigDecimal getTotalRevenue();
+    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.status = 'DELIVERED' AND o.totalAmount IS NOT NULL")
+    Double getTotalRevenue();
 }

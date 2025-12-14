@@ -3,17 +3,10 @@ package com.example.project_al.modules.catalog.domain;
 import com.example.project_al.modules.user.domain.User;
 import com.example.project_al.shared.kernel.BaseEntity;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "reviews")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Review extends BaseEntity {
 
     @Column(name = "rating", nullable = false)
@@ -32,4 +25,56 @@ public class Review extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    // Constructors
+    public Review() {
+    }
+
+    public Review(Integer rating, String comment, Product product, User user) {
+        this.rating = rating;
+        this.comment = comment;
+        this.product = product;
+        this.user = user;
+    }
+
+    // Getters and Setters
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public LocalDateTime getReviewDate() {
+        return reviewDate;
+    }
+
+    public void setReviewDate(LocalDateTime reviewDate) {
+        this.reviewDate = reviewDate;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

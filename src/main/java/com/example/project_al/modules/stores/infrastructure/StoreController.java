@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -19,11 +19,16 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/stores")
-@RequiredArgsConstructor
 @Tag(name = "Store Management", description = "APIs for managing stores and posts")
 public class StoreController {
 
     private final StoreService storeService;
+
+    // Constructor with @Autowired
+    @Autowired
+    public StoreController(StoreService storeService) {
+        this.storeService = storeService;
+    }
 
     @PostMapping
     @Operation(summary = "Create a new store")
@@ -89,7 +94,10 @@ public class StoreController {
             @Valid @RequestBody Post post) {
         Store store = storeService.findById(storeId)
                 .orElseThrow(() -> new RuntimeException("Store not found"));
+
+        // Set the store on the post
         post.setStore(store);
+
         Post created = storeService.createPost(post);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(created, "Post created successfully"));

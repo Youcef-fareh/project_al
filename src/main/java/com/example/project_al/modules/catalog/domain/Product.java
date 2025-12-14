@@ -3,38 +3,31 @@ package com.example.project_al.modules.catalog.domain;
 import com.example.project_al.modules.stores.domain.Store;
 import com.example.project_al.shared.kernel.BaseEntity;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "products")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Product extends BaseEntity {
 
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
-
-    @Column(name = "price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
-
-    @Column(name = "options", columnDefinition = "TEXT")
-    private String options;
-
-    @Column(name = "quantity", nullable = false)
-    private Integer quantity;
-
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "sku", unique = true)
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
+
+    @Column(unique = true)
     private String sku;
+
+    @Column(columnDefinition = "TEXT")
+    private String options;
+
+    @Column(nullable = false)
+    private Integer quantity;
 
     @Column(name = "image_url")
     private String imageUrl;
@@ -50,11 +43,114 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Review> reviews = new ArrayList<>();
 
-    // REMOVED: private Boolean active = true; // This is already in BaseEntity
-
     @Column(name = "average_rating")
     private Double averageRating = 0.0;
 
+    // Constructors
+    public Product() {
+    }
+
+    public Product(String name, String description, BigDecimal price, String sku,
+                   String options, Integer quantity, String imageUrl) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.sku = sku;
+        this.options = options;
+        this.quantity = quantity;
+        this.imageUrl = imageUrl;
+    }
+
+    // Getters and Setters
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public String getSku() {
+        return sku;
+    }
+
+    public void setSku(String sku) {
+        this.sku = sku;
+    }
+
+    public String getOptions() {
+        return options;
+    }
+
+    public void setOptions(String options) {
+        this.options = options;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public Store getStore() {
+        return store;
+    }
+
+    public void setStore(Store store) {
+        this.store = store;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public List<Review> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(List<Review> reviews) {
+        this.reviews = reviews;
+    }
+
+    public Double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    // Business methods from UML
     public void command() {
         System.out.println("Product " + name + " has been commanded");
     }

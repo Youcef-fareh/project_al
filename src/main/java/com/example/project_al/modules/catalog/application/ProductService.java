@@ -4,7 +4,7 @@ import com.example.project_al.modules.catalog.domain.Category;
 import com.example.project_al.modules.catalog.domain.Product;
 import com.example.project_al.modules.catalog.infrastructure.CategoryRepository;
 import com.example.project_al.modules.catalog.infrastructure.ProductRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,12 +15,17 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+
+    @Autowired
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository) {
+        this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
+    }
 
     public Product createProduct(Product product) {
         if (product.getSku() != null && productRepository.findBySku(product.getSku()).isPresent()) {
@@ -104,24 +109,14 @@ public class ProductService {
     public void deactivateProduct(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
-        product.setIsActive(false); // Changed from setActive to setIsActive
+        product.setIsActive(false);
         productRepository.save(product);
     }
 
     public void activateProduct(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
-        product.setIsActive(true); // Changed from setActive to setIsActive
+        product.setIsActive(true);
         productRepository.save(product);
-    }
-
-    // Additional useful methods
-    public Page<Product> findActiveProducts(Pageable pageable) {
-        // We need to add this method to the repository
-        return productRepository.findByIsActiveTrue(pageable);
-    }
-
-    public List<Product> findProductsByStoreAndCategory(Long storeId, Long categoryId) {
-        return productRepository.findByStoreIdAndCategoryId(storeId, categoryId);
     }
 }

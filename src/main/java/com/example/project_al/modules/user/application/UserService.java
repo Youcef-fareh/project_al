@@ -3,7 +3,7 @@ package com.example.project_al.modules.user.application;
 import com.example.project_al.modules.user.domain.*;
 import com.example.project_al.modules.user.infrastructure.FollowRepository;
 import com.example.project_al.modules.user.infrastructure.UserRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,13 +14,20 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class UserService {
 
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public UserService(UserRepository userRepository, FollowRepository followRepository,
+                       PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.followRepository = followRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public User registerUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
@@ -80,10 +87,9 @@ public class UserService {
             throw new RuntimeException("Already following this seller");
         }
 
-        Follow follow = Follow.builder()
-                .buyer(buyer)
-                .seller(seller)
-                .build();
+        Follow follow = new Follow();
+        follow.setBuyer(buyer);
+        follow.setSeller(seller);
 
         buyer.follow(seller);
         userRepository.save(buyer);
@@ -120,14 +126,14 @@ public class UserService {
     public void deactivateUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setIsActive(false); // CHANGED: setActive(false) -> setIsActive(false)
+        user.setIsActive(false);
         userRepository.save(user);
     }
 
     public void activateUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setIsActive(true); // CHANGED: setActive(true) -> setIsActive(true)
+        user.setIsActive(true);
         userRepository.save(user);
     }
 

@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -21,11 +21,15 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/products")
-@RequiredArgsConstructor
 @Tag(name = "Product Catalog", description = "APIs for managing products and categories")
 public class ProductController {
 
     private final ProductService productService;
+
+    @Autowired
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
 
     @PostMapping
     @Operation(summary = "Create a new product")
@@ -40,15 +44,6 @@ public class ProductController {
     public ResponseEntity<ApiResponse<Product>> getProduct(@PathVariable Long id) {
         return productService.findById(id)
                 .map(product -> ResponseEntity.ok(ApiResponse.success(product)))
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(ApiResponse.error("Product not found")));
-    }
-
-    @GetMapping("/sku/{sku}")
-    @Operation(summary = "Get product by SKU")
-    public ResponseEntity<ApiResponse<Product>> getProductBySku(@PathVariable String sku) {
-        Optional<Product> product = productService.findById(Long.parseLong(sku));
-        return product.map(value -> ResponseEntity.ok(ApiResponse.success(value)))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(ApiResponse.error("Product not found")));
     }

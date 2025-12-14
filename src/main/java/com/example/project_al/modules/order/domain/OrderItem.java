@@ -2,17 +2,10 @@ package com.example.project_al.modules.order.domain;
 
 import com.example.project_al.modules.catalog.domain.Product;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "order_items")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class OrderItem {
 
     @Id
@@ -27,7 +20,6 @@ public class OrderItem {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @Column(name = "quantity")
     private Integer quantity;
 
     @Column(name = "unit_price", precision = 10, scale = 2)
@@ -36,6 +28,69 @@ public class OrderItem {
     @Column(name = "subtotal", precision = 10, scale = 2)
     private BigDecimal subtotal;
 
+    // Constructors
+    public OrderItem() {
+    }
+
+    public OrderItem(Product product, Integer quantity, BigDecimal unitPrice) {
+        this.product = product;
+        this.quantity = quantity;
+        this.unitPrice = unitPrice;
+        calculateSubtotal();
+    }
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+        calculateSubtotal();
+    }
+
+    public BigDecimal getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(BigDecimal unitPrice) {
+        this.unitPrice = unitPrice;
+        calculateSubtotal();
+    }
+
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(BigDecimal subtotal) {
+        this.subtotal = subtotal;
+    }
+
+    // Helper methods
     @PrePersist
     @PreUpdate
     public void calculateSubtotal() {

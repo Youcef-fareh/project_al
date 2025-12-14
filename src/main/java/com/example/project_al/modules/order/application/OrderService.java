@@ -1,33 +1,29 @@
 package com.example.project_al.modules.order.application;
 
-import com.example.project_al.modules.catalog.application.ProductService;
 import com.example.project_al.modules.catalog.domain.Product;
 import com.example.project_al.modules.order.domain.Order;
 import com.example.project_al.modules.order.domain.OrderItem;
 import com.example.project_al.modules.order.domain.OrderStatus;
 import com.example.project_al.modules.order.infrastructure.OrderRepository;
 import com.example.project_al.modules.user.domain.Buyer;
-import com.example.project_al.modules.user.infrastructure.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final UserRepository userRepository;
-    private final ProductService productService;
+
+    public OrderService(OrderRepository orderRepository) {
+        this.orderRepository = orderRepository;
+    }
 
     public Order createOrder(Order order) {
         // Validate buyer
@@ -36,17 +32,19 @@ public class OrderService {
         }
 
         // Validate and reserve product quantities
-        for (OrderItem item : order.getOrderItems()) {
-            Product product = item.getProduct();
-            if (product.getQuantity() < item.getQuantity()) {
-                throw new RuntimeException("Insufficient stock for product: " + product.getName());
+        if (order.getOrderItems() != null) {
+            for (OrderItem item : order.getOrderItems()) {
+                Product product = item.getProduct();
+                if (product.getQuantity() < item.getQuantity()) {
+                    throw new RuntimeException("Insufficient stock for product: " + product.getName());
+                }
+                product.reduceQuantity(item.getQuantity());
+                item.setUnitPrice(product.getPrice());
+                item.calculateSubtotal();
             }
-            product.reduceQuantity(item.getQuantity());
-            item.setUnitPrice(product.getPrice());
-            item.calculateSubtotal();
         }
 
-        order.order();
+        order.placeOrder();
         return orderRepository.save(order);
     }
 
@@ -71,12 +69,23 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
         switch (status) {
-            case CONFIRMED -> order.confirm();
-            case CANCELLED -> order.cancel();
-            case SHIPPED -> order.ship("TRACK" + orderId);
-            case DELIVERED -> order.deliver();
-            case PROCESSING -> order.pay();
-            default -> throw new RuntimeException("Invalid status transition");
+            case CONFIRMED:
+                order.confirm();
+                break;
+            case CANCELLED:
+                order.cancel();
+                break;
+            case SHIPPED:
+                order.ship("TRACK" + orderId);
+                break;
+            case DELIVERED:
+                order.deliver();
+                break;
+            case PROCESSING:
+                order.pay();
+                break;
+            default:
+                throw new RuntimeException("Invalid status transition");
         }
 
         return orderRepository.save(order);
@@ -120,8 +129,9 @@ public class OrderService {
         return orderRepository.findRecentOrders(startDate);
     }
 
-    public BigDecimal getTotalRevenue() {
-        return orderRepository.getTotalRevenue();
+    public Double getTotalRevenue() {
+        Double revenue = orderRepository.getTotalRevenue();
+        return revenue != null ? revenue : 0.0;
     }
 
     public Long countByStatus(OrderStatus status) {
@@ -141,9 +151,13 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
         // Restore all product quantities
-        order.getOrderItems().forEach(item -> {
-            item.getProduct().increaseQuantity(item.getQuantity());
-        });
+        if (order.getOrderItems() != null) {
+            for (OrderItem item : order.getOrderItems()) {
+                if (item != null && item.getProduct() != null && item.getQuantity() != null) {
+                    item.getProduct().increaseQuantity(item.getQuantity());
+                }
+            }
+        }
 
         orderRepository.delete(order);
     }

@@ -22,5 +22,5 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     @Query("SELECT c FROM Category c WHERE c.name LIKE %:keyword%")
     List<Category> searchByName(@Param("keyword") String keyword);
 
-    List<Category> findByActiveTrue();
+    List<Category> findByIsActiveTrue();
 }

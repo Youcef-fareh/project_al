@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -22,12 +22,17 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
-@RequiredArgsConstructor
 @Tag(name = "User Management", description = "APIs for managing users, buyers, and sellers")
 public class UserController {
 
     private final UserService userService;
     private final AuthService authService;
+
+    @Autowired
+    public UserController(UserService userService, AuthService authService) {
+        this.userService = userService;
+        this.authService = authService;
+    }
 
     @PostMapping("/register/buyer")
     @Operation(summary = "Register a new buyer")

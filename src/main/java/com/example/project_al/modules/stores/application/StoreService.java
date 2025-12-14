@@ -5,7 +5,6 @@ import com.example.project_al.modules.stores.domain.Post;
 import com.example.project_al.modules.stores.domain.Store;
 import com.example.project_al.modules.stores.infrastructure.PostRepository;
 import com.example.project_al.modules.stores.infrastructure.StoreRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,12 +14,17 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class StoreService {
 
     private final StoreRepository storeRepository;
     private final PostRepository postRepository;
+
+    // Constructor
+    public StoreService(StoreRepository storeRepository, PostRepository postRepository) {
+        this.storeRepository = storeRepository;
+        this.postRepository = postRepository;
+    }
 
     public Store createStore(Store store) {
         if (storeRepository.existsByNomStore(store.getNomStore())) {
@@ -74,7 +78,7 @@ public class StoreService {
     public void deleteStore(Long id) {
         Store store = storeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Store not found"));
-        store.setIsActive(false); // CHANGED: setActive(false) -> setIsActive(false)
+        store.setIsActive(false);
         storeRepository.save(store);
     }
 
@@ -89,23 +93,5 @@ public class StoreService {
                 .orElseThrow(() -> new RuntimeException("Store not found"));
         store.confirm(order);
         storeRepository.save(store);
-    }
-
-    // Additional useful methods
-    public void activateStore(Long id) {
-        Store store = storeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Store not found"));
-        store.setIsActive(true); // NEW: Method to activate a store
-        storeRepository.save(store);
-    }
-
-    public List<Store> findActiveStores() {
-        // Add this method to StoreRepository first
-        return storeRepository.findByIsActiveTrue();
-    }
-
-    public List<Store> findActiveStoresBySeller(Long sellerId) {
-        // Add this method to StoreRepository first
-        return storeRepository.findBySellerIdAndIsActiveTrue(sellerId);
     }
 }

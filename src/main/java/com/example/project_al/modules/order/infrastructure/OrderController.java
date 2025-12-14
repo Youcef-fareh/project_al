@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,17 +17,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
-@RequiredArgsConstructor
 @Tag(name = "Order Management", description = "APIs for managing orders")
 public class OrderController {
 
     private final OrderService orderService;
+
+    @Autowired
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
 
     @PostMapping
     @Operation(summary = "Create a new order")
@@ -120,8 +123,8 @@ public class OrderController {
 
     @GetMapping("/revenue")
     @Operation(summary = "Get total revenue")
-    public ResponseEntity<ApiResponse<BigDecimal>> getTotalRevenue() {
-        BigDecimal revenue = orderService.getTotalRevenue();
+    public ResponseEntity<ApiResponse<Double>> getTotalRevenue() {
+        Double revenue = orderService.getTotalRevenue();
         return ResponseEntity.ok(ApiResponse.success(revenue));
     }
 

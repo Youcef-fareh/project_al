@@ -3,7 +3,7 @@ package com.example.project_al.modules.user.application;
 import com.example.project_al.modules.user.domain.User;
 import com.example.project_al.modules.user.infrastructure.UserRepository;
 import com.example.project_al.modules.user.infrastructure.security.JwtService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -13,12 +13,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final UserRepository userRepository;
+
+    @Autowired
+    public AuthService(AuthenticationManager authenticationManager, JwtService jwtService,
+                       UserRepository userRepository) {
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+        this.userRepository = userRepository;
+    }
 
     public Map<String, Object> authenticate(String email, String password) {
         Authentication authentication = authenticationManager.authenticate(

@@ -24,24 +24,25 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.name LIKE %:keyword% OR p.description LIKE %:keyword%")
     Page<Product> searchProducts(@Param("keyword") String keyword, Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE p.price BETWEEN :minPrice AND :maxPrice")
+    @Query("SELECT p FROM Product p WHERE p.price BETWEEN :minPrice AND :maxPrice AND p.isActive = true")
     Page<Product> findByPriceRange(@Param("minPrice") BigDecimal minPrice,
                                    @Param("maxPrice") BigDecimal maxPrice,
                                    Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE p.quantity > 0")
+    @Query("SELECT p FROM Product p WHERE p.quantity > 0 AND p.isActive = true")
     List<Product> findAvailableProducts();
 
-    @Query("SELECT p FROM Product p WHERE p.store.id = :storeId AND p.active = true")
+    @Query("SELECT p FROM Product p WHERE p.store.id = :storeId AND p.isActive = true")
     List<Product> findActiveByStoreId(@Param("storeId") Long storeId);
 
-    @Query("SELECT p FROM Product p WHERE p.category.id = :categoryId AND p.active = true")
+    @Query("SELECT p FROM Product p WHERE p.category.id = :categoryId AND p.isActive = true")
     Page<Product> findActiveByCategoryId(@Param("categoryId") Long categoryId, Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE p.price <= :maxPrice AND p.quantity > 0")
+    @Query("SELECT p FROM Product p WHERE p.price <= :maxPrice AND p.quantity > 0 AND p.isActive = true")
     List<Product> findAffordableProducts(@Param("maxPrice") BigDecimal maxPrice);
 
     Page<Product> findByIsActiveTrue(Pageable pageable);
 
-    List<Product> findByStoreIdAndCategoryId(Long storeId, Long categoryId);
+    @Query("SELECT p FROM Product p WHERE p.store.id = :storeId AND p.category.id = :categoryId AND p.isActive = true")
+    List<Product> findByStoreIdAndCategoryId(@Param("storeId") Long storeId, @Param("categoryId") Long categoryId);
 }
