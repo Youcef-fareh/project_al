@@ -6,7 +6,7 @@ import com.example.project_al.modules.user.infrastructure.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,14 +19,10 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
-    private final PasswordEncoder passwordEncoder;
-
     @Autowired
-    public UserService(UserRepository userRepository, FollowRepository followRepository,
-                       PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, FollowRepository followRepository) {
         this.userRepository = userRepository;
         this.followRepository = followRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     public User registerUser(User user) {
@@ -34,7 +30,7 @@ public class UserService {
             throw new RuntimeException("Email already registered");
         }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // user.setPassword(passwordEncoder.encode(user.getPassword())); // Security removed
         return userRepository.save(user);
     }
 
@@ -139,8 +135,18 @@ public class UserService {
 
     public boolean validateCredentials(String email, String password) {
         return userRepository.findByEmail(email)
-                .map(user -> passwordEncoder.matches(password, user.getPassword()))
+                .map(user -> user.getPassword().equals(password))
                 .orElse(false);
+    }
+
+    public com.example.project_al.modules.user.domain.User login(String email, String password) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.getPassword().equals(password)) {
+            throw new RuntimeException("Invalid password");
+        }
+        return user;
     }
 
     public List<User> findByUserListId(Integer userListId) {

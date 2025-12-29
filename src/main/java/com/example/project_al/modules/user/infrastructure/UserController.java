@@ -1,6 +1,6 @@
 package com.example.project_al.modules.user.infrastructure;
 
-import com.example.project_al.modules.user.application.AuthService;
+
 import com.example.project_al.modules.user.application.UserService;
 import com.example.project_al.modules.user.domain.Buyer;
 import com.example.project_al.modules.user.domain.Seller;
@@ -26,12 +26,9 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
-    private final AuthService authService;
-
     @Autowired
-    public UserController(UserService userService, AuthService authService) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.authService = authService;
     }
 
     @PostMapping("/register/buyer")
@@ -52,13 +49,13 @@ public class UserController {
 
     @PostMapping("/login")
     @Operation(summary = "Authenticate user")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> login(
+    public ResponseEntity<ApiResponse<User>> login(
             @RequestBody Map<String, String> credentials) {
         String email = credentials.get("email");
         String password = credentials.get("password");
 
-        Map<String, Object> authResponse = authService.authenticate(email, password);
-        return ResponseEntity.ok(ApiResponse.success(authResponse, "Login successful"));
+        User user = userService.login(email, password);
+        return ResponseEntity.ok(ApiResponse.success(user, "Login successful"));
     }
 
     @GetMapping("/{id}")
